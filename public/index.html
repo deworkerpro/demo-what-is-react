@@ -8,6 +8,7 @@
   <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/redux@4/dist/redux.js" crossorigin></script>
+  <script src="https://unpkg.com/react-redux@7/dist/react-redux.js" crossorigin></script>
   <script src="https://unpkg.com/babel-standalone@6/babel.js" crossorigin></script>
   <script src="https://unpkg.com/ionicons@5/dist/ionicons/ionicons.esm.js" type="module" crossorigin></script>
 </head>
@@ -207,50 +208,6 @@ const store = Redux.createStore(Redux.combineReducers({
 
 // ##########################
 
-const StoreContext = React.createContext()
-
-// ##########################
-
-function connect (mapStateToProps, mapDispatchToProps) {
-  return (WrappedComponent) => {
-    return (props) => {
-      return (
-        <StoreContext.Consumer>
-          {(store) => {
-            return React.createElement(
-              class extends React.Component {
-                render () {
-                  const stateToProps = mapStateToProps ? mapStateToProps(store.getState()) : {}
-                  const dispatchToProps = mapDispatchToProps ? mapDispatchToProps(store.dispatch) : {}
-                  return (
-                    <WrappedComponent
-                      {...this.props}
-                      {...stateToProps}
-                      {...dispatchToProps}
-                    />
-                  )
-                }
-                componentDidMount () {
-                  this.unsubscribe = store.subscribe(this.handleChange.bind(this))
-                }
-                componentWillUnmount () {
-                  this.unsubscribe()
-                }
-                handleChange () {
-                  this.forceUpdate()
-                }
-              },
-              props
-            )
-          }}
-        </StoreContext.Consumer>
-      )
-    }
-  }
-}
-
-// ##########################
-
 function App () {
   return (
     <div className="app">
@@ -288,7 +245,7 @@ const clockMapStateToProps = (state) => ({
   time: state.clock.time
 })
 
-const ClockConnected = connect(clockMapStateToProps)(Clock)
+const ClockConnected = ReactRedux.connect(clockMapStateToProps)(Clock)
 
 function Loading () {
   return <div className="loading">Loading...</div>
@@ -310,7 +267,7 @@ const lotsMapStateToProps = (state) => ({
   lots: state.auction.lots
 })
 
-const LotsConnected = connect(lotsMapStateToProps)(Lots)
+const LotsConnected = ReactRedux.connect(lotsMapStateToProps)(Lots)
 
 function Lot ({ lot, favorite, unfavorite }) {
   return (
@@ -340,7 +297,7 @@ const lotMapDispatchToProps = (dispatch) => ({
   }
 })
 
-const LotConnected = connect(null, lotMapDispatchToProps)(Lot)
+const LotConnected = ReactRedux.connect(null, lotMapDispatchToProps)(Lot)
 
 function Favorite ({ active, favorite, unfavorite }) {
   return active ? (
@@ -357,9 +314,9 @@ function Favorite ({ active, favorite, unfavorite }) {
 // ##########################
 
 ReactDOM.render(
-  <StoreContext.Provider value={store}>
+  <ReactRedux.Provider store={store}>
     <App />
-  </StoreContext.Provider>,
+  </ReactRedux.Provider>,
   document.getElementById('root')
 )
 
