@@ -277,26 +277,30 @@ const store = Redux.createStore(
 const RouterContext = React.createContext()
 
 function Router ({ children }) {
+  const state = window.history.state
   const [location, setLocation] = React.useState(
-    window.location.hash.slice(1) || '/'
+    state ? state.location : window.location.pathname
   )
 
   React.useEffect(() => {
-    const listener = () => {
-      setLocation(window.location.hash.slice(1) || '/')
+    const listener = (event) => {
+      const state = event.state
+      setLocation(state ? state.location : window.location.pathname)
     }
-    window.addEventListener('hashchange', listener, false)
+    window.addEventListener('popstate', listener, false)
     return () => {
-      window.removeEventListener('hashchange', listener)
+      window.removeEventListener('popstate', listener)
     }
   }, [setLocation])
 
   const navigate = (location) => {
-    window.location.hash = location
+    const state = { location }
+    window.history.pushState(state, '', location)
+    window.dispatchEvent(new PopStateEvent('popstate', { state: state }));
   }
 
   const createHref = (path) => {
-    return '#' + path
+    return path
   }
 
   return <RouterContext.Provider
