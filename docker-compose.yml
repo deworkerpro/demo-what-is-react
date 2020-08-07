@@ -1,0 +1,9 @@
+version: "3.7"
+services:
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - ./public:/app/public
+    ports:
+      - "8080:80"
