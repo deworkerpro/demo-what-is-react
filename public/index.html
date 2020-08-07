@@ -116,10 +116,14 @@ function Lot ({ lot }) {
 
 // ##########################
 
-render(
-  App({ state }),
-  document.getElementById('root')
-)
+function renderView (state) {
+  render(
+    App({ state }),
+    document.getElementById('root')
+  )
+}
+
+renderView(state)
 
 // ##########################
 
@@ -129,10 +133,7 @@ setInterval(() => {
     time: new Date()
   }
 
-  render(
-    App({ state }),
-    document.getElementById('root')
-  )
+  renderView(state)
 }, 1000)
 
 // ##########################
