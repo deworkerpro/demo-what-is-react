@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/redux@4/dist/redux.js" crossorigin></script>
+  <script src="https://unpkg.com/react-redux@7/dist/react-redux.js" crossorigin></script>
+  <script src="https://unpkg.com/redux-thunk@2/dist/redux-thunk.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.12.6/babel.js" crossorigin></script>
   <script src="https://unpkg.com/ionicons@5/dist/ionicons/ionicons.esm.js" type="module" crossorigin></script>
 </head>
@@ -86,6 +89,13 @@ const stream = {
 
 // ##########################
 
+const auctionInitialState = {
+  lots: [],
+  loading: false,
+  loaded: false,
+  error: null
+}
+
 const LOTS_LOADING_PENDING = 'LOTS_LOADING_PENDING'
 const LOTS_LOADING_SUCCESS = 'LOTS_LOADING_SUCCESS'
 const LOTS_LOADING_ERROR = 'LOTS_LOADING_ERROR'
@@ -93,7 +103,7 @@ const CHANGE_LOT_PRICE = 'CHANGE_LOT_PRICE'
 const FAVORITE_LOT = 'FAVORITE_LOT'
 const UNFAVORITE_LOT = 'UNFAVORITE_LOT'
 
-function lotsReducer (state, action) {
+function auctionReducer (state = auctionInitialState, action) {
   switch (action.type) {
     case LOTS_LOADING_PENDING:
       return {
@@ -183,11 +193,28 @@ function lotsLoadingError (error) {
   }
 }
 
+function loadLotsAsync () {
+  return (dispatch, getState, { api }) => {
+    dispatch(lotsLoadingPending())
+    api.get('/lots')
+      .then((lots) => dispatch(lotsLoadingSuccess(lots)))
+      .catch((error) => dispatch(lotsLoadingError(error.message)))
+  }
+}
+
 function changeLotPrice (id, price) {
   return {
     type: CHANGE_LOT_PRICE,
     id,
     price
+  }
+}
+
+function subscribeToLotPrice (id) {
+  return (dispatch, getState, { stream }) => {
+    return stream.subscribe(`price-${id}`, (data) => {
+      dispatch(changeLotPrice(data.id, data.price))
+    })
   }
 }
 
@@ -198,12 +225,37 @@ function favoriteLot (id) {
   }
 }
 
+function favoriteLotAsync (id) {
+  return (dispatch, getState, { api }) => {
+    return api.post(`/lots/${id}/favorite`).then(() => {
+      dispatch(favoriteLot(id))
+    })
+  }
+}
+
 function unfavoriteLot (id) {
   return {
     type: UNFAVORITE_LOT,
     id
   }
 }
+
+function unfavoriteLotAsync (id) {
+  return (dispatch, getState, { api }) => {
+    return api.post(`/lots/${id}/unfavorite`).then(() => {
+      dispatch(unfavoriteLot(id))
+    })
+  }
+}
+
+// ##########################
+
+const thunk = ReduxThunk.default
+
+const store = Redux.createStore(
+  Redux.combineReducers({ auction: auctionReducer }),
+  Redux.applyMiddleware(thunk.withExtraArgument({ api, stream }))
+)
 
 // ##########################
 
@@ -212,7 +264,7 @@ function App () {
     <div className="app">
       <Header />
       <ClockContainer />
-      <LotsContainer />
+      <LotsContainerConnected />
     </div>
   )
 }
@@ -261,22 +313,10 @@ function AlertError ({ message }) {
   return <div className="error">{message}</div>
 }
 
-function LotsContainer () {
-  const [state, dispatch] = React.useReducer(lotsReducer, {
-    lots: [],
-    loading: false,
-    loaded: false,
-    error: null
-  })
-
-  const { lots, loading, loaded, error } = state
-
+function LotsContainer ({ lots, loading, loaded, error, load }) {
   React.useEffect(() => {
     if (!loaded && !loading && error === null) {
-      dispatch(lotsLoadingPending())
-      api.get('/lots')
-        .then((lots) => dispatch(lotsLoadingSuccess(lots)))
-        .catch((error) => dispatch(lotsLoadingError(error.message)))
+      load()
     }
   }, [loaded, loading, error])
 
@@ -292,44 +332,46 @@ function LotsContainer () {
     return null
   }
 
-  const subscribe = (id) => {
-    return stream.subscribe(`price-${id}`, (data) => {
-      dispatch(changeLotPrice(data.id, data.price))
-    })
-  }
-
-  const favorite = (id) => {
-    return api.post(`/lots/${id}/favorite`).then(() => {
-      dispatch(favoriteLot(id))
-    })
-  }
-
-  const unfavorite = (id) => {
-    return api.post(`/lots/${id}/unfavorite`).then(() => {
-      dispatch(unfavoriteLot(id))
-    })
-  }
-
-  return <Lots lots={lots} subscribe={subscribe} favorite={favorite} unfavorite={unfavorite} />
+  return <Lots lots={lots} />
 }
 
-function Lots ({ lots, subscribe, favorite, unfavorite }) {
+const lotsContainerMapStateToProps = (state) => ({
+  lots: state.auction.lots,
+  loading: state.auction.loading,
+  loaded: state.auction.loaded,
+  error: state.auction.error
+})
+
+const lotsContainerMapDispatchToProps = {
+  load: loadLotsAsync
+}
+
+const LotsContainerConnected = ReactRedux.connect(
+  lotsContainerMapStateToProps,
+  lotsContainerMapDispatchToProps
+)(LotsContainer)
+
+function Lots ({ lots }) {
   return (
     <div className="lots">
-      {lots.map((lot) => (
-        <LotContainer lot={lot} subscribe={subscribe} favorite={favorite} unfavorite={unfavorite} key={lot.id} />
-      ))}
+      {lots.map((lot) => <LotContainerConnected lot={lot} key={lot.id} />)}
     </div>
   )
 }
 
-function LotContainer ({ lot, subscribe, favorite, unfavorite }) {
+function LotContainer ({ lot, subscribe }) {
   React.useEffect(() => {
     return subscribe(lot.id)
   }, [lot.id])
 
-  return <Lot lot={lot} favorite={favorite} unfavorite={unfavorite} />
+  return <LotConnected lot={lot} />
 }
+
+const lotContainerMapDispatchToProps = {
+  subscribe: subscribeToLotPrice
+}
+
+const LotContainerConnected = ReactRedux.connect(null, lotContainerMapDispatchToProps)(LotContainer)
 
 function Lot ({ lot, favorite, unfavorite }) {
   return (
@@ -346,6 +388,13 @@ function Lot ({ lot, favorite, unfavorite }) {
   )
 }
 
+const lotMapDispatchToProps = {
+  favorite: favoriteLotAsync,
+  unfavorite: unfavoriteLotAsync
+}
+
+const LotConnected = ReactRedux.connect(null, lotMapDispatchToProps)(Lot)
+
 function Favorite ({ active, favorite, unfavorite }) {
   return active ? (
     <button type="button" onClick={unfavorite} className="unfavorite">
@@ -361,7 +410,9 @@ function Favorite ({ active, favorite, unfavorite }) {
 // ##########################
 
 ReactDOM.render(
-  <App />,
+  <ReactRedux.Provider store={store}>
+    <App />
+  </ReactRedux.Provider>,
   document.getElementById('root')
 )
 
