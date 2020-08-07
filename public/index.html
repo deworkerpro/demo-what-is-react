@@ -274,37 +274,79 @@ const store = Redux.createStore(
 
 // ##########################
 
+function createHashHistory () {
+  return {
+    get location() {
+      return window.location.hash.slice(1) || '/'
+    },
+    push (location) {
+      window.location.hash = location
+    },
+    createHref (path) {
+      return '#' + path
+    },
+    listen (listener) {
+      const hashListener = () => {
+        listener(window.location.hash.slice(1))
+      }
+      window.addEventListener('hashchange', hashListener, false)
+      return () => {
+        window.removeEventListener('hashchange', hashListener)
+      }
+    }
+  }
+}
+
+function HashRouter ({ children }) {
+  const history = createHashHistory()
+  return <Router history={history} children={children} />
+}
+
+function createBrowserHistory () {
+  return {
+    get location() {
+      const state = window.history.state
+      return state ? state.location : window.location.pathname
+    },
+    push (location) {
+      const state = { location }
+      window.history.pushState(state, '', location)
+      window.dispatchEvent(new PopStateEvent('popstate', { state: state }));
+    },
+    createHref (path) {
+      return path
+    },
+    listen (listener) {
+      const stateListener = (event) => {
+        const state = event.state
+        listener(state ? state.location : window.location.pathname)
+      }
+      window.addEventListener('popstate', stateListener, false)
+      return () => {
+        window.removeEventListener('popstate', stateListener)
+      }
+    }
+  }
+}
+
+function BrowserRouter ({ children }) {
+  const history = createBrowserHistory()
+  return <Router history={history} children={children} />
+}
+
 const RouterContext = React.createContext()
 
-function Router ({ children }) {
-  const state = window.history.state
-  const [location, setLocation] = React.useState(
-    state ? state.location : window.location.pathname
-  )
+function Router ({ history, children }) {
+  const [location, setLocation] = React.useState(history.location)
 
   React.useEffect(() => {
-    const listener = (event) => {
-      const state = event.state
-      setLocation(state ? state.location : window.location.pathname)
-    }
-    window.addEventListener('popstate', listener, false)
-    return () => {
-      window.removeEventListener('popstate', listener)
-    }
-  }, [setLocation])
-
-  const navigate = (location) => {
-    const state = { location }
-    window.history.pushState(state, '', location)
-    window.dispatchEvent(new PopStateEvent('popstate', { state: state }));
-  }
-
-  const createHref = (path) => {
-    return path
-  }
+    return history.listen((location) => {
+      setLocation(location)
+    })
+  }, [history, setLocation])
 
   return <RouterContext.Provider
-    value={{ location, navigate, createHref }}
+    value={{ location, history }}
     children={children}
   />
 }
@@ -312,10 +354,10 @@ function Router ({ children }) {
 function Link ({ to, children, ...options }) {
   return <RouterContext.Consumer>
     {(value) => {
-      const href = to ? value.createHref(to) : ''
+      const href = to ? value.history.createHref(to) : ''
       const onClick = (event) => {
         event.preventDefault()
-        value.navigate(to)
+        value.history.push(to)
       }
       return <a href={href} onClick={onClick} {...options}>{children}</a>
     }}
@@ -376,12 +418,12 @@ function useParams () {
 
 function App () {
   return (
-    <Router>
+    <BrowserRouter>
       <div className="app">
         <Header />
         <Content />
       </div>
-    </Router>
+    </BrowserRouter>
   )
 }
 
