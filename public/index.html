@@ -139,6 +139,7 @@ function Lots ({ lots }) {
 function Lot ({ lot }) {
   const node = document.createElement('article')
   node.className = 'lot'
+  node.dataset.key = lot.id
 
   const price = document.createElement('div')
   price.className = 'price'
@@ -228,6 +229,11 @@ function sync (virtualNode, realNode) {
   if (virtualNode.attributes) {
     Array.from(virtualNode.attributes).forEach((attr) => {
       realNode[attr.name] = attr.value
+    })
+  }
+  if (virtualNode.dataset) {
+    Object.keys(virtualNode.dataset).forEach((name) => {
+      realNode.dataset[name] = virtualNode.dataset[name]
     })
   }
   if (virtualNode.nodeValue !== realNode.nodeValue) {
