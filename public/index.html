@@ -8,28 +8,84 @@
 </head>
 <body>
 
-<div class="app">
-  <header class="header">
-    <img class="logo" src="logo.png" alt="">
-  </header>
+<div id="root"></div>
 
-  <div class="clock">
-    12:11:20 PM
-  </div>
+<script>
 
-  <div class="lots">
-    <article class="lot">
-      <div class="price">16</div>
-      <h1>Apple</h1>
-      <p>Apple description</p>
-    </article>
-    <article class="lot">
-      <div class="price">41</div>
-      <h1>Orange</h1>
-      <p>Orange description</p>
-    </article>
-  </div>
-</div>
+// ##########################
+
+const state = {
+  time: new Date(),
+  lots: [
+    {
+      id: 1,
+      name: 'Apple',
+      description: 'Apple description',
+      price: 16
+    },
+    {
+      id: 2,
+      name: 'Orange',
+      description: 'Orange description',
+      price: 41
+    }
+  ]
+}
+
+// ##########################
+
+const app = document.createElement('div')
+app.className = 'app'
+
+const header = document.createElement('header')
+header.className = 'header'
+
+const logo = document.createElement('img')
+logo.className = 'logo'
+logo.src = 'logo.png'
+header.append(logo)
+
+app.append(header)
+
+const clock = document.createElement('div')
+clock.className = 'clock'
+clock.innerText = state.time.toLocaleTimeString()
+
+app.append(clock)
+
+const lots = document.createElement('div')
+lots.className = 'lots'
+
+state.lots.forEach((lot) => {
+  const node = document.createElement('article')
+  node.className = 'lot'
+
+  const price = document.createElement('div')
+  price.className = 'price'
+  price.innerText = lot.price
+  node.append(price)
+
+  const name = document.createElement('h1')
+  name.innerText = lot.name
+  node.append(name)
+
+  const description = document.createElement('p')
+  description.innerText = lot.description
+  node.append(description)
+
+  lots.append(node)
+})
+
+app.append(lots)
+
+// ##########################
+
+const domRoot = document.getElementById('root')
+domRoot.append(app)
+
+// ##########################
+
+</script>
 
 </body>
 </html>
