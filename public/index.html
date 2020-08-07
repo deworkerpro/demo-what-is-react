@@ -126,15 +126,12 @@ render(
 setInterval(() => {
   const time = new Date()
 
-  const clock = document.getElementById('root').querySelector('.app > .clock')
+  const app = document.getElementById('root').querySelector('.app')
 
-  clock.querySelector('.value').innerText = time.toLocaleTimeString()
+  const clock = app.querySelector('.clock')
+  const newClock = Clock({ time })
 
-  if (time.getHours() > 7 && time.getHours() < 21) {
-    clock.querySelector('.icon').className = 'icon day'
-  } else {
-    clock.querySelector('.icon').className = 'icon night'
-  }
+  app.replaceChild(newClock, clock)
 }, 1000)
 
 // ##########################
