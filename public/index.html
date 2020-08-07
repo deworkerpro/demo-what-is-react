@@ -208,9 +208,52 @@ api.get('/lots').then((lots) => {
 
 // ##########################
 
-function render (newDom, realDomRoot) {
-  realDomRoot.innerHTML = ''
-  realDomRoot.append(newDom)
+function render (virtualDom, realDomRoot) {
+  const virtualDomRoot = document.createElement(realDomRoot.tagName)
+
+  virtualDomRoot.id = realDomRoot.id
+  virtualDomRoot.appendChild(virtualDom)
+
+  sync(virtualDomRoot, realDomRoot)
+}
+
+function sync (virtualNode, realNode) {
+  // Sync element
+  if (virtualNode.id !== realNode.id) {
+    realNode.id = virtualNode.id
+  }
+  if (virtualNode.className !== realNode.className) {
+    realNode.className = virtualNode.className
+  }
+  if (virtualNode.attributes) {
+    Array.from(virtualNode.attributes).forEach((attr) => {
+      realNode[attr.name] = attr.value
+    })
+  }
+  if (virtualNode.nodeValue !== realNode.nodeValue) {
+    realNode.nodeValue = virtualNode.nodeValue
+  }
+
+  realNode.innerHTML = ''
+
+  // Sync child nodes
+  const virtualChildren = virtualNode.childNodes
+
+  for (let i = 0; i < virtualChildren.length; i++) {
+    const virtual = virtualChildren[i]
+
+    // Add
+    let newReal
+    if (virtual.nodeType === Node.TEXT_NODE) {
+      newReal = document.createTextNode('')
+    } else {
+      newReal = document.createElement(virtual.tagName)
+    }
+
+    sync(virtual, newReal)
+
+    realNode.appendChild(newReal)
+  }
 }
 
 // ##########################
