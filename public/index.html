@@ -61,13 +61,50 @@ const stream = {
 
 // ##########################
 
+const SET_TIME = 'SET_TIME'
+const SET_LOTS = 'SET_LOTS'
+const CHANGE_LOT_PRICE = 'CHANGE_LOT_PRICE'
+
+function appReducer (state, action) {
+  switch (action.type) {
+    case SET_TIME:
+      return {
+        ...state,
+        time: action.time
+      }
+    case SET_LOTS:
+      return {
+        ...state,
+        lots: action.lots
+      }
+    case CHANGE_LOT_PRICE:
+      return {
+        ...state,
+        lots: state.lots.map((lot) => {
+          if (lot.id === action.id) {
+            return {
+              ...lot,
+              price: action.price
+            }
+          }
+          return lot
+        })
+      }
+    default:
+      return state
+  }
+}
+
+// ##########################
+
 const initialState = {
   time: new Date(),
   lots: null
 }
 
 class Store {
-  constructor (initialState) {
+  constructor (reducer, initialState) {
+    this.reducer = reducer
     this.state = initialState
     this.listeners = []
   }
@@ -84,13 +121,15 @@ class Store {
     }
   }
 
-  setState (state) {
-    this.state = (typeof state === 'function' ? state(this.state) : state)
+  dispatch (action) {
+    this.state = this.reducer(this.state, action)
     this.listeners.forEach((listener) => listener())
   }
 }
 
-const store = new Store(initialState)
+// ##########################
+
+const store = new Store(appReducer, initialState)
 
 // ##########################
 
@@ -170,60 +209,26 @@ renderView(store.getState())
 
 // ##########################
 
-const SET_TIME = 'SET_TIME'
-const SET_LOTS = 'SET_LOTS'
-const CHANGE_LOT_PRICE = 'CHANGE_LOT_PRICE'
-
-function appReducer (state, action) {
-  switch (action.type) {
-    case SET_TIME:
-      return {
-        ...state,
-        time: action.time
-      }
-    case SET_LOTS:
-      return {
-        ...state,
-        lots: action.lots
-      }
-    case CHANGE_LOT_PRICE:
-      return {
-        ...state,
-        lots: state.lots.map((lot) => {
-          if (lot.id === action.id) {
-            return {
-              ...lot,
-              price: action.price
-            }
-          }
-          return lot
-        })
-      }
-    default:
-      return state
-  }
-}
-
 setInterval(() => {
-  store.setState((state) => appReducer(state, {
+  store.dispatch({
     type: SET_TIME,
     time: new Date()
-  }))
+  })
 }, 1000)
 
 api.get('/lots').then((lots) => {
-  store.setState((state) => appReducer(state, {
+  store.dispatch({
     type: SET_LOTS,
     lots
-  }))
+  })
 
   lots.forEach((lot) => {
     stream.subscribe(`price-${lot.id}`, (data) => {
-      store.setState((state) => appReducer(state, {
+      store.dispatch({
         type: CHANGE_LOT_PRICE,
         id: data.id,
         price: data.price
-      }))
+      })
     })
   })
 })
