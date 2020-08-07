@@ -9,6 +9,7 @@
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/redux@4/dist/redux.js" crossorigin></script>
   <script src="https://unpkg.com/react-redux@7/dist/react-redux.js" crossorigin></script>
+  <script src="https://unpkg.com/redux-thunk@2/dist/redux-thunk.js" crossorigin></script>
   <script src="https://unpkg.com/babel-standalone@6/babel.js" crossorigin></script>
   <script src="https://unpkg.com/ionicons@5/dist/ionicons/ionicons.esm.js" type="module" crossorigin></script>
 </head>
@@ -217,23 +218,14 @@ function unfavoriteLotAsync (id) {
 
 // ##########################
 
-function functionalActionSupport ({ dispatch, getState }) {
-  return function (next) {
-    return function (action) {
-      if (typeof action === 'function') {
-        return action(dispatch, getState)
-      }
-      return next(action);
-    }
-  }
-}
+const thunk = ReduxThunk.default
 
 const store = Redux.createStore(
   Redux.combineReducers({
     clock: clockReducer,
     auction: auctionReducer
   }),
-  Redux.applyMiddleware(functionalActionSupport)
+  Redux.applyMiddleware(thunk)
 )
 
 // ##########################
