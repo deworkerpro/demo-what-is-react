@@ -211,23 +211,25 @@ const StoreContext = React.createContext()
 
 // ##########################
 
-function connect (mapStateToProps, mapDispatchToProps, WrappedComponent) {
-  return (props) => {
-    return (
-      <StoreContext.Consumer>
-        {(store) => {
-          const stateToProps = mapStateToProps ? mapStateToProps(store.getState()) : {}
-          const dispatchToProps = mapDispatchToProps ? mapDispatchToProps(store.dispatch) : {}
-          return (
-            <WrappedComponent
-              {...props}
-              {...stateToProps}
-              {...dispatchToProps}
-            />
-          )
-        }}
-      </StoreContext.Consumer>
-    )
+function connect (mapStateToProps, mapDispatchToProps) {
+  return (WrappedComponent) => {
+    return (props) => {
+      return (
+        <StoreContext.Consumer>
+          {(store) => {
+            const stateToProps = mapStateToProps ? mapStateToProps(store.getState()) : {}
+            const dispatchToProps = mapDispatchToProps ? mapDispatchToProps(store.dispatch) : {}
+            return (
+              <WrappedComponent
+                {...props}
+                {...stateToProps}
+                {...dispatchToProps}
+              />
+            )
+          }}
+        </StoreContext.Consumer>
+      )
+    }
   }
 }
 
@@ -270,7 +272,7 @@ const clockMapStateToProps = (state) => ({
   time: state.clock.time
 })
 
-const ClockConnected = connect(clockMapStateToProps, null, Clock)
+const ClockConnected = connect(clockMapStateToProps)(Clock)
 
 function Loading () {
   return <div className="loading">Loading...</div>
@@ -292,7 +294,7 @@ const lotsMapStateToProps = (state) => ({
   lots: state.auction.lots
 })
 
-const LotsConnected = connect(lotsMapStateToProps, null, Lots)
+const LotsConnected = connect(lotsMapStateToProps)(Lots)
 
 function Lot ({ lot, favorite, unfavorite }) {
   return (
@@ -322,7 +324,7 @@ const lotMapDispatchToProps = (dispatch) => ({
   }
 })
 
-const LotConnected = connect(null, lotMapDispatchToProps, Lot)
+const LotConnected = connect(null, lotMapDispatchToProps)(Lot)
 
 function Favorite ({ active, favorite, unfavorite }) {
   return active ? (
