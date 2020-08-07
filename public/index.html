@@ -206,12 +206,10 @@ setInterval(() => {
 api.get('/lots').then((lots) => {
   store.setState((state) => setLots(state, lots))
 
-  const onPrice = (data) => {
-    store.setState((state) => changeLotPrice(state, data.id, data.price))
-  }
-
   lots.forEach((lot) => {
-    stream.subscribe(`price-${lot.id}`, onPrice)
+    stream.subscribe(`price-${lot.id}`, (data) => {
+      store.setState((state) => changeLotPrice(state, data.id, data.price))
+    })
   })
 })
 
