@@ -222,7 +222,7 @@ function App () {
     <div className="app">
       <Header />
       <ClockContainer />
-      <LotsConnected />
+      <LotsContainerConnected />
     </div>
   )
 }
@@ -267,7 +267,7 @@ function Loading () {
   return <div className="loading">Loading...</div>
 }
 
-function Lots ({ lots, loaded, load }) {
+function LotsContainer ({ lots, loaded, load }) {
   React.useEffect(() => {
     if (!loaded) {
       load()
@@ -278,29 +278,46 @@ function Lots ({ lots, loaded, load }) {
     return <Loading />
   }
 
-  return (
-    <div className="lots">
-      {lots.map((lot) => <LotConnected lot={lot} key={lot.id} />)}
-    </div>
-  )
+  return <Lots lots={lots} />
 }
 
-const lotsMapStateToProps = (state) => ({
+const lotsContainerMapStateToProps = (state) => ({
   lots: state.auction.lots,
   loaded: state.auction.lots !== null
 })
 
-const lotsMapDispatchToProps = {
+const lotsContainerMapDispatchToProps = {
   load: loadLotsAsync
 }
 
-const LotsConnected = ReactRedux.connect(lotsMapStateToProps, lotsMapDispatchToProps)(Lots)
+const LotsContainerConnected = ReactRedux.connect(
+  lotsContainerMapStateToProps,
+  lotsContainerMapDispatchToProps
+)(LotsContainer)
 
-function Lot ({ lot, subscribe, favorite, unfavorite }) {
+function Lots ({ lots }) {
+  return (
+    <div className="lots">
+      {lots.map((lot) => <LotContainerConnected lot={lot} key={lot.id} />)}
+    </div>
+  )
+}
+
+function LotContainer ({ lot, subscribe }) {
   React.useEffect(() => {
     return subscribe(lot.id)
   }, [lot.id])
 
+  return <LotConnected lot={lot} />
+}
+
+const lotContainerMapDispatchToProps = {
+  subscribe: subscribeToLotPrice
+}
+
+const LotContainerConnected = ReactRedux.connect(null, lotContainerMapDispatchToProps)(LotContainer)
+
+function Lot ({ lot, favorite, unfavorite }) {
   return (
     <article className={'lot' + (lot.favorite ? ' favorite' : '')}>
       <div className="price">{lot.price}</div>
@@ -316,7 +333,6 @@ function Lot ({ lot, subscribe, favorite, unfavorite }) {
 }
 
 const lotMapDispatchToProps = {
-  subscribe: subscribeToLotPrice,
   favorite: favoriteLotAsync,
   unfavorite: unfavoriteLotAsync
 }
