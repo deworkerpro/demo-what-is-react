@@ -47,7 +47,7 @@ const api = {
             } else {
               reject(new Error('Connection error'))
             }
-          }, 1000)
+          }, 200)
         })
       default:
         throw new Error('Unknown address')
@@ -96,6 +96,7 @@ const auctionInitialState = {
   error: null
 }
 
+const LOTS_CLEAR = 'LOTS_CLEAR'
 const LOTS_LOADING_PENDING = 'LOTS_LOADING_PENDING'
 const LOTS_LOADING_SUCCESS = 'LOTS_LOADING_SUCCESS'
 const LOTS_LOADING_ERROR = 'LOTS_LOADING_ERROR'
@@ -105,6 +106,14 @@ const UNFAVORITE_LOT = 'UNFAVORITE_LOT'
 
 function auctionReducer (state = auctionInitialState, action) {
   switch (action.type) {
+    case LOTS_CLEAR:
+      return {
+        ...state,
+        lots: [],
+        loading: false,
+        loaded: false,
+        error: null
+      }
     case LOTS_LOADING_PENDING:
       return {
         ...state,
@@ -170,6 +179,12 @@ function auctionReducer (state = auctionInitialState, action) {
       }
     default:
       return state
+  }
+}
+
+function lotsClear () {
+  return {
+    type: LOTS_CLEAR
   }
 }
 
@@ -490,12 +505,18 @@ function AlertError ({ message, retry }) {
   )
 }
 
-function LotsContainer ({ lots, loading, loaded, error, load }) {
+function LotsContainer ({ lots, loading, loaded, error, load, unload }) {
   React.useEffect(() => {
     if (!loaded && !loading && error === null) {
       load()
     }
   }, [loaded, loading, error])
+
+  React.useEffect(() => {
+    if (loaded || error !== null) {
+      return unload
+    }
+  }, [loaded, error])
 
   if (error !== null) {
     return <AlertError message={error} retry={load} />
@@ -520,7 +541,8 @@ const lotsContainerMapStateToProps = (state) => ({
 })
 
 const lotsContainerMapDispatchToProps = {
-  load: loadLotsAsync
+  load: loadLotsAsync,
+  unload: lotsClear
 }
 
 const LotsContainerConnected = ReactRedux.connect(
