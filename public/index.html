@@ -275,7 +275,7 @@ const store = Redux.createStore(
 
 // ##########################
 
-const { BrowserRouter, Switch, Route, Link, useParams } = ReactRouterDOM
+const { BrowserRouter, Switch, Route, Link, NavLink, useParams } = ReactRouterDOM
 
 // ##########################
 
@@ -307,9 +307,9 @@ function Nav () {
   return (
     <nav>
       <ul>
-        <li><Link to="/">Home</Link></li>
-        <li><Link to="/lots">Lots</Link></li>
-        <li><Link to="/help">Help</Link></li>
+        <li><NavLink to="/" exact>Home</NavLink></li>
+        <li><NavLink to="/lots">Lots</NavLink></li>
+        <li><NavLink to="/help" exact>Help</NavLink></li>
       </ul>
     </nav>
   )
