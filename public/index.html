@@ -70,12 +70,16 @@ function Clock ({ time }) {
   return node
 }
 
+function Loading () {
+  const node = document.createElement('div')
+  node.className = 'loading'
+  node.innerText = 'Loading...'
+  return node
+}
+
 function Lots ({ lots }) {
   if (lots === null) {
-    const node = document.createElement('div')
-    node.className = 'loading'
-    node.innerText = 'Loading...'
-    return node
+    return Loading()
   }
 
   const node = document.createElement('div')
