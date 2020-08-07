@@ -250,9 +250,7 @@ function Loading () {
   return <div className="loading">Loading...</div>
 }
 
-function Lots ({ lots, load }) {
-  const loaded = lots !== null
-
+function Lots ({ lots, loaded, load }) {
   React.useEffect(() => {
     if (!loaded) {
       load()
@@ -271,7 +269,8 @@ function Lots ({ lots, load }) {
 }
 
 const lotsMapStateToProps = (state) => ({
-  lots: state.auction.lots
+  lots: state.auction.lots,
+  loaded: state.auction.lots !== null
 })
 
 const lotsMapDispatchToProps = {
