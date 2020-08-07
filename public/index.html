@@ -13,7 +13,7 @@
 
 <div id="root"></div>
 
-<script type="text/own">
+<script type="text/babel">
 
 // ##########################
 
@@ -169,20 +169,6 @@ api.get('/lots').then((lots) => {
 
 // ##########################
 
-</script>
-
-<script>
-function convertToNativeJs (code) {
-  return Babel.transform(code, { presets: ['stage-2'] }).code
-}
-
-const scripts = document.querySelectorAll('script[type="text/own"]')
-scripts.forEach(el => {
-  const js = convertToNativeJs(el.text)
-  const script = document.createElement('script')
-  script.text = js
-  document.querySelector('body').append(script)
-})
 </script>
 
 </body>
