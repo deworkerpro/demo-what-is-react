@@ -84,33 +84,6 @@ const stream = {
 
 // ##########################
 
-const clockInitialState = {
-  time: new Date()
-}
-
-const SET_TIME = 'SET_TIME'
-
-function clockReducer (state = clockInitialState, action) {
-  switch (action.type) {
-    case SET_TIME:
-      return {
-        ...state,
-        time: action.time
-      }
-    default:
-      return state
-  }
-}
-
-function setTime (time) {
-  return {
-    type: SET_TIME,
-    time
-  }
-}
-
-// ##########################
-
 const auctionInitialState = {
   lots: null
 }
@@ -221,10 +194,7 @@ function unfavoriteLotAsync (id) {
 const thunk = ReduxThunk.default
 
 const store = Redux.createStore(
-  Redux.combineReducers({
-    clock: clockReducer,
-    auction: auctionReducer
-  }),
+  Redux.combineReducers({ auction: auctionReducer }),
   Redux.applyMiddleware(thunk.withExtraArgument({ api }))
 )
 
@@ -234,7 +204,7 @@ function App () {
   return (
     <div className="app">
       <Header />
-      <ClockConnected />
+      <Clock />
       <LotsConnected />
     </div>
   )
@@ -252,22 +222,40 @@ function Logo () {
   return <img className="logo" src="logo.png" alt="" />
 }
 
-function Clock ({ time }) {
-  const isDay = time.getHours() >= 7 && time.getHours() <= 21
+class Clock extends React.Component {
+  constructor () {
+    super()
+    this.state = {
+      time: new Date()
+    }
+    this.tick = this.tick.bind(this)
+  }
 
-  return (
-    <div className="clock">
-      <span className="value">{time.toLocaleTimeString()}</span>
-      <span className={isDay ? 'icon day' : 'icon night'} />
-    </div>
-  )
+  tick () {
+    this.setState({
+      time: new Date()
+    })
+  }
+
+  componentDidMount () {
+    this.interval = setInterval(this.tick, 1000)
+  }
+
+  componentWillUnmount () {
+    clearInterval(this.interval)
+  }
+
+  render () {
+    const isDay = this.state.time.getHours() >= 7 && this.state.time.getHours() <= 21
+
+    return (
+      <div className="clock">
+        <span className="value">{this.state.time.toLocaleTimeString()}</span>
+        <span className={isDay ? 'icon day' : 'icon night'} />
+      </div>
+    )
+  }
 }
-
-const clockMapStateToProps = (state) => ({
-  time: state.clock.time
-})
-
-const ClockConnected = ReactRedux.connect(clockMapStateToProps)(Clock)
 
 function Loading () {
   return <div className="loading">Loading...</div>
@@ -335,10 +323,6 @@ ReactDOM.render(
 )
 
 // ##########################
-
-setInterval(() => {
-  store.dispatch(setTime(new Date()))
-}, 1000)
 
 api.get('/lots').then((lots) => {
   store.dispatch(setLots(lots))
