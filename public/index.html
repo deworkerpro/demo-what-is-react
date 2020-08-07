@@ -4,19 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Demo</title>
-  <link rel="stylesheet" href="https://unpkg.com/mocha@8/mocha.css">
   <link rel="stylesheet" href="style.css">
   <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/redux@4/dist/redux.js" crossorigin></script>
   <script src="https://unpkg.com/babel-standalone@6/babel.js" crossorigin></script>
   <script src="https://unpkg.com/ionicons@5/dist/ionicons/ionicons.esm.js" type="module" crossorigin></script>
-  <script src="https://unpkg.com/mocha@8/mocha.js"></script>
-  <script src="https://unpkg.com/chai@2/chai.js"></script>
 </head>
 <body>
-
-<div id="mocha"></div>
 
 <div id="root"></div>
 
@@ -262,45 +257,6 @@ function Clock ({ time }) {
     </div>
   )
 }
-
-// ##########################
-
-mocha.setup('bdd');
-const assert = chai.assert;
-
-describe('Clock', () => {
-  it('Time of day', () => {
-    const container = document.createElement('div')
-
-    ReactDOM.render(
-      <Clock time={new Date('2020-10-19T14:12:31')} />,
-      container
-    )
-
-    const clock = container.querySelector('.clock')
-
-    assert.equal(clock.querySelector('.value').innerText, '2:12:31 PM')
-    assert.equal(clock.querySelector('.icon').className, 'icon day')
-  })
-
-  it('Time of night', () => {
-    const container = document.createElement('div')
-
-    ReactDOM.render(
-      <Clock time={new Date('2020-10-19T03:24:12')} />,
-      container
-    )
-
-    const clock = container.querySelector('.clock')
-
-    assert.equal(clock.querySelector('.value').innerText, '3:24:12 AM')
-    assert.equal(clock.querySelector('.icon').className, 'icon night')
-  })
-})
-
-mocha.run();
-
-// ##########################
 
 function Loading () {
   return <div className="loading">Loading...</div>
