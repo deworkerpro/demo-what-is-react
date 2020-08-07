@@ -85,9 +85,7 @@ class Store {
       ...this.state,
       ...(typeof diff === 'function' ? diff(this.state) : diff)
     }
-    this.listeners.forEach((listener) => {
-      listener()
-    })
+    this.listeners.forEach((listener) => listener())
   }
 }
 
