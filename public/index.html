@@ -29,13 +29,15 @@ const api = {
                 id: 1,
                 name: 'Apple',
                 description: 'Apple description',
-                price: 16
+                price: 16,
+                favorite: true
               },
               {
                 id: 2,
                 name: 'Orange',
                 description: 'Orange description',
-                price: 41
+                price: 41,
+                favorite: false
               }
             ])
           }, 1000)
@@ -196,7 +198,7 @@ function Lots ({ lots }) {
 
 function Lot ({ lot }) {
   return (
-    <article className="lot">
+    <article className={'lot' + (lot.favorite ? ' favorite' : '')}>
       <div className="price">{lot.price}</div>
       <h1>{lot.name}</h1>
       <p>{lot.description}</p>

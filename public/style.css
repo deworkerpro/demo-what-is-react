@@ -58,6 +58,11 @@ body {
   margin-bottom: 10px;
 }
 
+.lot.favorite {
+  border-color: #ffd7cb;
+  background: #ffd7cb;
+}
+
 .lot .price {
   float: right;
   text-align: right;
@@ -70,7 +75,7 @@ body {
 }
 
 .lot p {
-  margin: 0;
+  margin: 0 0 15px 0;
 }
 
 .loading {
