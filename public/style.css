@@ -72,3 +72,10 @@ body {
 .lot p {
   margin: 0;
 }
+
+.loading {
+  padding: 15px;
+  border-radius: 6px;
+  background: #eee;
+  text-align: center;
+}
