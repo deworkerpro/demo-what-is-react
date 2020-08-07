@@ -286,22 +286,26 @@ function Link ({ to, children, ...options }) {
   </RouterContext.Consumer>
 }
 
-function matchPath (location, path) {
-  const regexp = new RegExp('^' + path + '$')
+function matchPath (location, params) {
+  const regexp = new RegExp(
+    params.exact
+      ? '^' + params.path + '$'
+      : '^' + params.path + '(/.*)?$'
+  )
   return regexp.exec(location)
 }
 
-function Route ({ path, children }) {
+function Route (props) {
   return <RouterContext.Consumer>
     {(value) => {
-      const match = matchPath(value.location, path)
+      const match = matchPath(value.location, props)
       if (match) {
         return <RouterContext.Provider
           value={{
             ...value,
             match
           }}
-          children={children}
+          children={props.children}
         />
       }
       return null
@@ -355,16 +359,16 @@ function Nav () {
 function Content () {
   return (
     <>
-      <Route path="/">
+      <Route path="/" exact>
         <HomePage />
       </Route>
-      <Route path="/lots">
+      <Route path="/lots" exact>
         <LotsPage />
       </Route>
-      <Route path="/lots/(?<id>[\w-]+)">
+      <Route path="/lots/(?<id>[\w-]+)" exact>
         <LotPage />
       </Route>
-      <Route path="/help">
+      <Route path="/help" exact>
         <HelpPage />
       </Route>
     </>
