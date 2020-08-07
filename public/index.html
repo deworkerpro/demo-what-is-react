@@ -238,9 +238,12 @@ function ClockConnected () {
     <StoreContext.Consumer>
       {(store) => {
         const state = store.getState()
-        const time = state.clock.time
 
-        return <Clock time={time} />
+        const stateToProps = {
+          time: state.clock.time
+        }
+
+        return <Clock {...stateToProps} />
       }}
     </StoreContext.Consumer>
   )
@@ -266,9 +269,12 @@ function LotsConnected () {
     <StoreContext.Consumer>
       {(store) => {
         const state = store.getState()
-        const lots = state.auction.lots
 
-        return <Lots lots={lots} />
+        const stateToProps = {
+          lots: state.auction.lots
+        }
+
+        return <Lots {...stateToProps} />
       }}
     </StoreContext.Consumer>
   )
@@ -286,25 +292,26 @@ function Lots ({ lots }) {
   )
 }
 
-function LotConnected ({ lot }) {
+function LotConnected (props) {
   return (
     <StoreContext.Consumer>
       {(store) => {
         const dispatch = store.dispatch
 
-        const favorite = (id) => {
-          api.post(`/lots/${id}/favorite`).then(() => {
-            dispatch(favoriteLot(id))
-          })
+        const dispatchToProps = {
+          favorite: (id) => {
+            api.post(`/lots/${id}/favorite`).then(() => {
+              dispatch(favoriteLot(id))
+            })
+          },
+          unfavorite: (id) => {
+            api.post(`/lots/${id}/unfavorite`).then(() => {
+              dispatch(unfavoriteLot(id))
+            })
+          }
         }
 
-        const unfavorite = (id) => {
-          api.post(`/lots/${id}/unfavorite`).then(() => {
-            dispatch(unfavoriteLot(id))
-          })
-        }
-
-        return <Lot lot={lot} favorite={favorite} unfavorite={unfavorite} />
+        return <Lot {...props} {...dispatchToProps} />
       }}
     </StoreContext.Consumer>
   )
