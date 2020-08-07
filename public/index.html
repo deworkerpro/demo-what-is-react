@@ -100,10 +100,16 @@ function Lot ({ lot }) {
 
 // ##########################
 
-const newDom = App({ state })
-const realDomRoot = document.getElementById('root')
+render(
+  App({ state }),
+  document.getElementById('root')
+)
 
-realDomRoot.append(newDom)
+// ##########################
+
+function render (newDom, realDomRoot) {
+  realDomRoot.append(newDom)
+}
 
 // ##########################
 
