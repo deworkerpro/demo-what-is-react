@@ -170,26 +170,26 @@ renderView(store.getState())
 
 // ##########################
 
-function appReducer (state, action, params) {
-  switch (action) {
+function appReducer (state, action) {
+  switch (action.type) {
     case 'setTime':
       return {
         ...state,
-        time: params.time
+        time: action.time
       }
     case 'setLots':
       return {
         ...state,
-        lots: params.lots
+        lots: action.lots
       }
     case 'changeLotPrice':
       return {
         ...state,
         lots: state.lots.map((lot) => {
-          if (lot.id === params.id) {
+          if (lot.id === action.id) {
             return {
               ...lot,
-              price: params.price
+              price: action.price
             }
           }
           return lot
@@ -201,15 +201,22 @@ function appReducer (state, action, params) {
 }
 
 setInterval(() => {
-  store.setState((state) => appReducer(state, 'setTime', { time: new Date() }))
+  store.setState((state) => appReducer(state, {
+    type: 'setTime',
+    time: new Date()
+  }))
 }, 1000)
 
 api.get('/lots').then((lots) => {
-  store.setState((state) => appReducer(state, 'setLots', { lots }))
+  store.setState((state) => appReducer(state, {
+    type: 'setLots',
+    lots
+  }))
 
   lots.forEach((lot) => {
     stream.subscribe(`price-${lot.id}`, (data) => {
-      store.setState((state) => appReducer(state, 'changeLotPrice', {
+      store.setState((state) => appReducer(state, {
+        type: 'changeLotPrice',
         id: data.id,
         price: data.price
       }))
