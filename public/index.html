@@ -61,10 +61,29 @@ const stream = {
 
 // ##########################
 
-let state = {
+const initialState = {
   time: new Date(),
   lots: null
 }
+
+class Store {
+  constructor (initialState) {
+    this.state = initialState
+  }
+
+  getState () {
+    return this.state
+  }
+
+  changeState (diff) {
+    this.state = {
+      ...this.state,
+      ...diff
+    }
+  }
+}
+
+const store = new Store(initialState)
 
 // ##########################
 
@@ -136,30 +155,26 @@ function renderView (state) {
   )
 }
 
-renderView(state)
+renderView(store.getState())
 
 // ##########################
 
 setInterval(() => {
-  state = {
-    ...state,
+  store.changeState({
     time: new Date()
-  }
-
-  renderView(state)
+  })
+  renderView(store.getState())
 }, 1000)
 
 api.get('/lots').then((lots) => {
-  state = {
-    ...state,
+  store.changeState({
     lots
-  }
-  renderView(state)
+  })
+  renderView(store.getState())
 
   const onPrice = (data) => {
-    state = {
-      ...state,
-      lots: state.lots.map((lot) => {
+    store.changeState({
+      lots: store.getState().lots.map((lot) => {
         if (lot.id === data.id) {
           return {
             ...lot,
@@ -168,8 +183,8 @@ api.get('/lots').then((lots) => {
         }
         return lot
       })
-    }
-    renderView(state)
+    })
+    renderView(store.getState())
   }
 
   lots.forEach((lot) => {
