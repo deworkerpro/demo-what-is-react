@@ -78,7 +78,7 @@ class Store {
   changeState (diff) {
     this.state = {
       ...this.state,
-      ...diff
+      ...(typeof diff === 'function' ? diff(this.state) : diff)
     }
   }
 }
@@ -173,8 +173,8 @@ api.get('/lots').then((lots) => {
   renderView(store.getState())
 
   const onPrice = (data) => {
-    store.changeState({
-      lots: store.getState().lots.map((lot) => {
+    store.changeState((state) => ({
+      lots: state.lots.map((lot) => {
         if (lot.id === data.id) {
           return {
             ...lot,
@@ -183,7 +183,7 @@ api.get('/lots').then((lots) => {
         }
         return lot
       })
-    })
+    }))
     renderView(store.getState())
   }
 
