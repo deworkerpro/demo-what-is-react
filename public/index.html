@@ -204,7 +204,7 @@ function App () {
   return (
     <div className="app">
       <Header />
-      <Clock />
+      <ClockContainer />
       <LotsConnected />
     </div>
   )
@@ -222,7 +222,7 @@ function Logo () {
   return <img className="logo" src="logo.png" alt="" />
 }
 
-class Clock extends React.Component {
+class ClockContainer extends React.Component {
   constructor () {
     super()
     this.state = {
@@ -246,15 +246,19 @@ class Clock extends React.Component {
   }
 
   render () {
-    const isDay = this.state.time.getHours() >= 7 && this.state.time.getHours() <= 21
-
-    return (
-      <div className="clock">
-        <span className="value">{this.state.time.toLocaleTimeString()}</span>
-        <span className={isDay ? 'icon day' : 'icon night'} />
-      </div>
-    )
+    return <Clock time={this.state.time} />
   }
+}
+
+function Clock ({ time }) {
+  const isDay = time.getHours() >= 7 && time.getHours() <= 21
+
+  return (
+    <div className="clock">
+      <span className="value">{time.toLocaleTimeString()}</span>
+      <span className={isDay ? 'icon day' : 'icon night'} />
+    </div>
+  )
 }
 
 function Loading () {
