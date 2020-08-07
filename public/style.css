@@ -65,13 +65,26 @@ body {
 
 button {
   cursor: pointer;
-  background: #fff;
-  border: 1px solid #999;
-  color: #000;
   border-radius: 4px;
   padding: 4px 6px;
   font-size: 0.8rem;
   outline: none;
+}
+
+button * {
+  vertical-align: middle;
+}
+
+button.favorite {
+  background: #fff;
+  border: 1px solid #999;
+  color: #000;
+}
+
+button.unfavorite {
+  background: #fff;
+  border: 1px solid #ff8c68;
+  color: #dc0000;
 }
 
 .lot .price {

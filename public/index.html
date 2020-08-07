@@ -9,6 +9,7 @@
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/redux@4/dist/redux.js" crossorigin></script>
   <script src="https://unpkg.com/babel-standalone@6/babel.js" crossorigin></script>
+  <script src="https://unpkg.com/ionicons@5/dist/ionicons/ionicons.esm.js" type="module" crossorigin></script>
 </head>
 <body>
 
@@ -208,9 +209,15 @@ function Lot ({ lot }) {
 }
 
 function Favorite ({ active }) {
-  return active
-    ? <button type="button">Unfavorite</button>
-    : <button type="button">Favorite</button>
+  return active ? (
+    <button type="button" className="unfavorite">
+      <ion-icon name="heart-sharp" /> Unfavorite
+    </button>
+  ) : (
+    <button type="button" className="favorite">
+      <ion-icon name="heart-outline" /> Favorite
+    </button>
+  )
 }
 
 // ##########################
