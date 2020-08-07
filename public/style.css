@@ -71,6 +71,10 @@ button {
   outline: none;
 }
 
+button:disabled {
+  cursor: wait;
+}
+
 button * {
   vertical-align: middle;
 }
@@ -81,10 +85,21 @@ button.favorite {
   color: #000;
 }
 
+button.favorite:disabled {
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #ccc;
+}
+
 button.unfavorite {
   background: #fff;
   border: 1px solid #ff8c68;
   color: #dc0000;
+}
+
+button.unfavorite:disabled {
+  border: 1px solid #ffc0ad;
+  color: #ff8c68;
 }
 
 .lot .price {

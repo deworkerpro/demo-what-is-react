@@ -396,12 +396,28 @@ const lotMapDispatchToProps = {
 const LotConnected = ReactRedux.connect(null, lotMapDispatchToProps)(Lot)
 
 function Favorite ({ active, favorite, unfavorite }) {
+  const [enabled, setEnabled] = React.useState(true)
+
+  const onClickUnfavorite = () => {
+    setEnabled(false)
+    unfavorite()
+      .then(() => setEnabled(true))
+      .catch(() => setEnabled(true))
+  }
+
+  const onClickFavorite = () => {
+    setEnabled(false)
+    favorite()
+      .then(() => setEnabled(true))
+      .catch(() => setEnabled(true))
+  }
+
   return active ? (
-    <button type="button" onClick={unfavorite} className="unfavorite">
+    <button type="button" onClick={onClickUnfavorite} className="unfavorite" disabled={!enabled}>
       <ion-icon name="heart-sharp" /> Unfavorite
     </button>
   ) : (
-    <button type="button" onClick={favorite} className="favorite">
+    <button type="button" onClick={onClickFavorite} className="favorite" disabled={!enabled}>
       <ion-icon name="heart-outline" /> Favorite
     </button>
   )
