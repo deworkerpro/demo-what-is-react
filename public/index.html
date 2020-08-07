@@ -170,19 +170,23 @@ renderView(store.getState())
 
 // ##########################
 
+const SET_TIME = 'SET_TIME'
+const SET_LOTS = 'SET_LOTS'
+const CHANGE_LOT_PRICE = 'CHANGE_LOT_PRICE'
+
 function appReducer (state, action) {
   switch (action.type) {
-    case 'setTime':
+    case SET_TIME:
       return {
         ...state,
         time: action.time
       }
-    case 'setLots':
+    case SET_LOTS:
       return {
         ...state,
         lots: action.lots
       }
-    case 'changeLotPrice':
+    case CHANGE_LOT_PRICE:
       return {
         ...state,
         lots: state.lots.map((lot) => {
@@ -202,21 +206,21 @@ function appReducer (state, action) {
 
 setInterval(() => {
   store.setState((state) => appReducer(state, {
-    type: 'setTime',
+    type: SET_TIME,
     time: new Date()
   }))
 }, 1000)
 
 api.get('/lots').then((lots) => {
   store.setState((state) => appReducer(state, {
-    type: 'setLots',
+    type: SET_LOTS,
     lots
   }))
 
   lots.forEach((lot) => {
     stream.subscribe(`price-${lot.id}`, (data) => {
       store.setState((state) => appReducer(state, {
-        type: 'changeLotPrice',
+        type: CHANGE_LOT_PRICE,
         id: data.id,
         price: data.price
       }))
