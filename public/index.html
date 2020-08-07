@@ -243,17 +243,17 @@ function sync (virtualNode, realNode) {
     const virtual = virtualChildren[i]
 
     // Add
-    let newReal
-    if (virtual.nodeType === Node.TEXT_NODE) {
-      newReal = document.createTextNode('')
-    } else {
-      newReal = document.createElement(virtual.tagName)
-    }
-
+    const newReal = createRealNodeByVirtual(virtual)
     sync(virtual, newReal)
-
     realNode.appendChild(newReal)
   }
+}
+
+function createRealNodeByVirtual(virtual) {
+  if (virtual.nodeType === Node.TEXT_NODE) {
+    return document.createTextNode('')
+  }
+  return document.createElement(virtual.tagName)
 }
 
 // ##########################
