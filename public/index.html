@@ -170,32 +170,44 @@ renderView(store.getState())
 
 // ##########################
 
-setInterval(() => {
-  store.setState((state) => ({
+function setTime (state, time) {
+  return {
     ...state,
-    time: new Date()
-  }))
+    time
+  }
+}
+
+function setLots (state, lots) {
+  return {
+    ...state,
+    lots
+  }
+}
+
+function changeLotPrice (state, id, price) {
+  return {
+    ...state,
+    lots: state.lots.map((lot) => {
+      if (lot.id === id) {
+        return {
+          ...lot,
+          price: price
+        }
+      }
+      return lot
+    })
+  }
+}
+
+setInterval(() => {
+  store.setState((state) => setTime(state, new Date()))
 }, 1000)
 
 api.get('/lots').then((lots) => {
-  store.setState((state) => ({
-    ...state,
-    lots
-  }))
+  store.setState((state) => setLots(state, lots))
 
   const onPrice = (data) => {
-    store.setState((state) => ({
-      ...state,
-      lots: state.lots.map((lot) => {
-        if (lot.id === data.id) {
-          return {
-            ...lot,
-            price: data.price
-          }
-        }
-        return lot
-      })
-    }))
+    store.setState((state) => changeLotPrice(state, data.id, data.price))
   }
 
   lots.forEach((lot) => {
