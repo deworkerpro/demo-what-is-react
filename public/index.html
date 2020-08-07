@@ -275,15 +275,9 @@ const lotsMapStateToProps = (state) => ({
 
 const lotsMapDispatchToProps = {
   load: () => {
-    return (dispatch, getState, { api, stream }) => {
+    return (dispatch, getState, { api }) => {
       api.get('/lots').then((lots) => {
         dispatch(setLots(lots))
-
-        lots.forEach((lot) => {
-          stream.subscribe(`price-${lot.id}`, (data) => {
-            dispatch(changeLotPrice(data.id, data.price))
-          })
-        })
       })
     }
   }
@@ -291,7 +285,11 @@ const lotsMapDispatchToProps = {
 
 const LotsConnected = ReactRedux.connect(lotsMapStateToProps, lotsMapDispatchToProps)(Lots)
 
-function Lot ({ lot, favorite, unfavorite }) {
+function Lot ({ lot, subscribe, favorite, unfavorite }) {
+  React.useEffect(() => {
+    subscribe(lot.id)
+  }, [lot.id])
+
   return (
     <article className={'lot' + (lot.favorite ? ' favorite' : '')}>
       <div className="price">{lot.price}</div>
@@ -307,6 +305,13 @@ function Lot ({ lot, favorite, unfavorite }) {
 }
 
 const lotMapDispatchToProps = {
+  subscribe: (id) => {
+    return (dispatch, getState, { stream }) => {
+      stream.subscribe(`price-${id}`, (data) => {
+        dispatch(changeLotPrice(data.id, data.price))
+      })
+    }
+  },
   favorite: favoriteLotAsync,
   unfavorite: unfavoriteLotAsync
 }
