@@ -194,7 +194,7 @@ function favoriteLot (id) {
 }
 
 function favoriteLotAsync (id) {
-  return (dispatch) => {
+  return (dispatch, getState, { api }) => {
     return api.post(`/lots/${id}/favorite`).then(() => {
       dispatch(favoriteLot(id))
     })
@@ -209,7 +209,7 @@ function unfavoriteLot (id) {
 }
 
 function unfavoriteLotAsync (id) {
-  return (dispatch) => {
+  return (dispatch, getState, { api }) => {
     return api.post(`/lots/${id}/unfavorite`).then(() => {
       dispatch(unfavoriteLot(id))
     })
@@ -225,7 +225,7 @@ const store = Redux.createStore(
     clock: clockReducer,
     auction: auctionReducer
   }),
-  Redux.applyMiddleware(thunk)
+  Redux.applyMiddleware(thunk.withExtraArgument({ api }))
 )
 
 // ##########################
