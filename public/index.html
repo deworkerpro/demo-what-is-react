@@ -295,10 +295,28 @@ function matchPath (location, params) {
   return regexp.exec(location)
 }
 
+function Switch ({ children }) {
+  return (
+    <RouterContext.Consumer>
+      {(value) => {
+        for (const child of children) {
+          const match = matchPath(value.location, child.props)
+          if (match) {
+            return React.cloneElement(child, { computedMatch: match })
+          }
+        }
+        return null
+      }}
+    </RouterContext.Consumer>
+  )
+}
+
 function Route (props) {
   return <RouterContext.Consumer>
     {(value) => {
-      const match = matchPath(value.location, props)
+      const match = props.computedMatch
+        ? props.computedMatch
+        : matchPath(value.location, props)
       if (match) {
         return <RouterContext.Provider
           value={{
@@ -358,7 +376,7 @@ function Nav () {
 
 function Content () {
   return (
-    <>
+    <Switch>
       <Route path="/" exact>
         <HomePage />
       </Route>
@@ -371,8 +389,15 @@ function Content () {
       <Route path="/help" exact>
         <HelpPage />
       </Route>
-    </>
+      <Route path=".*">
+        <NotFound />
+      </Route>
+    </Switch>
   )
+}
+
+function NotFound () {
+  return <div>Not found!</div>
 }
 
 function Page ({ children }) {
