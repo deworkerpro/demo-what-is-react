@@ -170,28 +170,28 @@ renderView(store.getState())
 
 // ##########################
 
-function setTime (state, time) {
+function setTime (state, params) {
   return {
     ...state,
-    time
+    time: params.time
   }
 }
 
-function setLots (state, lots) {
+function setLots (state, params) {
   return {
     ...state,
-    lots
+    lots: params.lots
   }
 }
 
-function changeLotPrice (state, id, price) {
+function changeLotPrice (state, params) {
   return {
     ...state,
     lots: state.lots.map((lot) => {
-      if (lot.id === id) {
+      if (lot.id === params.id) {
         return {
           ...lot,
-          price: price
+          price: params.price
         }
       }
       return lot
@@ -200,15 +200,18 @@ function changeLotPrice (state, id, price) {
 }
 
 setInterval(() => {
-  store.setState((state) => setTime(state, new Date()))
+  store.setState((state) => setTime(state, { time: new Date() }))
 }, 1000)
 
 api.get('/lots').then((lots) => {
-  store.setState((state) => setLots(state, lots))
+  store.setState((state) => setLots(state, { lots }))
 
   lots.forEach((lot) => {
     stream.subscribe(`price-${lot.id}`, (data) => {
-      store.setState((state) => changeLotPrice(state, data.id, data.price))
+      store.setState((state) => changeLotPrice(state, {
+        id: data.id,
+        price: data.price
+      }))
     })
   })
 })
