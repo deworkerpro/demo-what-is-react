@@ -46,6 +46,23 @@ const api = {
       default:
         throw new Error('Unknown address')
     }
+  },
+  post (url) {
+    if (/^\/lots\/(\d+)\/favorite$/.exec(url)) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({})
+        }, 500)
+      })
+    }
+    if (/^\/lots\/(\d+)\/unfavorite$/.exec(url)) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({})
+        }, 500)
+      })
+    }
+    throw new Error('Unknown address')
   }
 }
 
@@ -265,11 +282,15 @@ function Favorite ({ active }) {
 // ##########################
 
 const favorite = (id) => {
-  store.dispatch(favoriteLot(id))
+  api.post(`/lots/${id}/favorite`).then(() => {
+    store.dispatch(favoriteLot(id))
+  })
 }
 
 const unfavorite = (id) => {
-  store.dispatch(unfavoriteLot(id))
+  api.post(`/lots/${id}/unfavorite`).then(() => {
+    store.dispatch(unfavoriteLot(id))
+  })
 }
 
 function renderView (state) {
