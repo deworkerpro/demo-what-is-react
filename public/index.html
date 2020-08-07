@@ -217,14 +217,30 @@ function connect (mapStateToProps, mapDispatchToProps) {
       return (
         <StoreContext.Consumer>
           {(store) => {
-            const stateToProps = mapStateToProps ? mapStateToProps(store.getState()) : {}
-            const dispatchToProps = mapDispatchToProps ? mapDispatchToProps(store.dispatch) : {}
-            return (
-              <WrappedComponent
-                {...props}
-                {...stateToProps}
-                {...dispatchToProps}
-              />
+            return React.createElement(
+              class extends React.Component {
+                render () {
+                  const stateToProps = mapStateToProps ? mapStateToProps(store.getState()) : {}
+                  const dispatchToProps = mapDispatchToProps ? mapDispatchToProps(store.dispatch) : {}
+                  return (
+                    <WrappedComponent
+                      {...this.props}
+                      {...stateToProps}
+                      {...dispatchToProps}
+                    />
+                  )
+                }
+                componentDidMount () {
+                  this.unsubscribe = store.subscribe(this.handleChange.bind(this))
+                }
+                componentWillUnmount () {
+                  this.unsubscribe()
+                }
+                handleChange () {
+                  this.forceUpdate()
+                }
+              },
+              props
             )
           }}
         </StoreContext.Consumer>
@@ -340,20 +356,12 @@ function Favorite ({ active, favorite, unfavorite }) {
 
 // ##########################
 
-function renderView (store) {
-  ReactDOM.render(
-    <StoreContext.Provider value={store}>
-      <App />
-    </StoreContext.Provider>,
-    document.getElementById('root')
-  )
-}
-
-store.subscribe(() => {
-  renderView(store)
-})
-
-renderView(store)
+ReactDOM.render(
+  <StoreContext.Provider value={store}>
+    <App />
+  </StoreContext.Provider>,
+  document.getElementById('root')
+)
 
 // ##########################
 
