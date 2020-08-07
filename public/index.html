@@ -152,11 +152,27 @@ function setLots (lots) {
   }
 }
 
+function loadLotsAsync () {
+  return (dispatch, getState, { api }) => {
+    api.get('/lots').then((lots) => {
+      dispatch(setLots(lots))
+    })
+  }
+}
+
 function changeLotPrice (id, price) {
   return {
     type: CHANGE_LOT_PRICE,
     id,
     price
+  }
+}
+
+function subscribeToLotPrice (id) {
+  return (dispatch, getState, { stream }) => {
+    return stream.subscribe(`price-${id}`, (data) => {
+      dispatch(changeLotPrice(data.id, data.price))
+    })
   }
 }
 
@@ -275,13 +291,7 @@ const lotsMapStateToProps = (state) => ({
 })
 
 const lotsMapDispatchToProps = {
-  load: () => {
-    return (dispatch, getState, { api }) => {
-      api.get('/lots').then((lots) => {
-        dispatch(setLots(lots))
-      })
-    }
-  }
+  load: loadLotsAsync
 }
 
 const LotsConnected = ReactRedux.connect(lotsMapStateToProps, lotsMapDispatchToProps)(Lots)
@@ -306,13 +316,7 @@ function Lot ({ lot, subscribe, favorite, unfavorite }) {
 }
 
 const lotMapDispatchToProps = {
-  subscribe: (id) => {
-    return (dispatch, getState, { stream }) => {
-      return stream.subscribe(`price-${id}`, (data) => {
-        dispatch(changeLotPrice(data.id, data.price))
-      })
-    }
-  },
+  subscribe: subscribeToLotPrice,
   favorite: favoriteLotAsync,
   unfavorite: unfavoriteLotAsync
 }
