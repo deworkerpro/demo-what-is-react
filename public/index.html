@@ -202,12 +202,15 @@ function Lot ({ lot }) {
       <div className="price">{lot.price}</div>
       <h1>{lot.name}</h1>
       <p>{lot.description}</p>
-      {lot.favorite
-        ? <button type="button">Unfavorite</button>
-        : <button type="button">Favorite</button>
-      }
+      <Favorite active={lot.favorite} />
     </article>
   )
+}
+
+function Favorite ({ active }) {
+  return active
+    ? <button type="button">Unfavorite</button>
+    : <button type="button">Favorite</button>
 }
 
 // ##########################
