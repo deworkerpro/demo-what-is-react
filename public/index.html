@@ -207,7 +207,22 @@ const store = Redux.createStore(Redux.combineReducers({
 
 // ##########################
 
-function App ({ time, lots, favorite, unfavorite }) {
+function App ({ state, dispatch }) {
+  const time = state.clock.time
+  const lots = state.auction.lots
+
+  const favorite = (id) => {
+    api.post(`/lots/${id}/favorite`).then(() => {
+      dispatch(favoriteLot(id))
+    })
+  }
+
+  const unfavorite = (id) => {
+    api.post(`/lots/${id}/unfavorite`).then(() => {
+      dispatch(unfavoriteLot(id))
+    })
+  }
+
   return (
     <div className="app">
       <Header />
@@ -289,25 +304,8 @@ function renderView (store) {
   const state = store.getState()
   const dispatch = store.dispatch
 
-  const time = state.clock.time
-  const lots = state.auction.lots
-
-  const dispatch = store.dispatch
-
-  const favorite = (id) => {
-    api.post(`/lots/${id}/favorite`).then(() => {
-      dispatch(favoriteLot(id))
-    })
-  }
-
-  const unfavorite = (id) => {
-    api.post(`/lots/${id}/unfavorite`).then(() => {
-      dispatch(unfavoriteLot(id))
-    })
-  }
-
   ReactDOM.render(
-    <App time={time} lots={lots} favorite={favorite} unfavorite={unfavorite} />,
+    <App state={state} dispatch={dispatch} />,
     document.getElementById('root')
   )
 }
