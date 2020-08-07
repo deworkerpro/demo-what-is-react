@@ -107,7 +107,18 @@ render(
 
 // ##########################
 
+setInterval(() => {
+  const time = new Date()
+
+  const clock = document.getElementById('root').querySelector('.app > .clock')
+
+  clock.innerText = time.toLocaleTimeString()
+}, 1000)
+
+// ##########################
+
 function render (newDom, realDomRoot) {
+  realDomRoot.innerHTML = ''
   realDomRoot.append(newDom)
 }
 
