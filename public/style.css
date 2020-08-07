@@ -14,12 +14,55 @@ body {
 
 .header {
   margin-bottom: 10px;
+  display: flex;
+  flex-direction: row;
 }
 
 .header .logo {
   display: block;
   width: 96px;
   height: 96px;
+}
+
+.header nav {
+  margin-left: auto;
+}
+
+.header nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.header nav ul li {
+  margin: 0 15px 0 0;
+  padding: 0;
+  display: inline-block;
+}
+
+.header nav ul li:last-child {
+  margin: 0;
+}
+
+a {
+  color: #000;
+}
+
+.page {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.page h1 {
+  margin: 0 0 20px 0;
+  padding: 0;
+  line-height: 1;
+}
+
+.page p:last-child {
+  margin: 0;
 }
 
 .clock {
@@ -129,4 +172,17 @@ button.unfavorite:disabled {
   border-radius: 6px;
   background: #ff5252;
   color: #fff;
+  display: flex;
+  flex-direction: row;
+}
+
+.error span,
+.error ion-icon {
+  display: flex;
+  vertical-align: middle;
+}
+
+.error ion-icon {
+  margin-left: auto;
+  cursor: pointer;
 }

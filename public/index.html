@@ -259,13 +259,54 @@ const store = Redux.createStore(
 
 // ##########################
 
+const RouterContext = React.createContext()
+
+function Router ({ children }) {
+  const [location, setLocation] = React.useState('/')
+
+  const navigate = (location) => {
+    setLocation(location)
+  }
+
+  return <RouterContext.Provider
+    value={{ location, navigate }}
+    children={children}
+  />
+}
+
+function Link ({ to, children, ...options }) {
+  return <RouterContext.Consumer>
+    {(value) => {
+      const onClick = (event) => {
+        event.preventDefault()
+        value.navigate(to)
+      }
+      return <a href="" onClick={onClick} {...options}>{children}</a>
+    }}
+  </RouterContext.Consumer>
+}
+
+function Route ({ path, children }) {
+  return <RouterContext.Consumer>
+    {(value) => {
+      if (value.location === path) {
+        return children
+      }
+      return null
+    }}
+  </RouterContext.Consumer>
+}
+
+// ##########################
+
 function App () {
   return (
-    <div className="app">
-      <Header />
-      <ClockContainer />
-      <LotsContainerConnected />
-    </div>
+    <Router>
+      <div className="app">
+        <Header />
+        <Content />
+      </div>
+    </Router>
   )
 }
 
@@ -273,12 +314,82 @@ function Header () {
   return (
     <header className="header">
       <Logo />
+      <Nav />
     </header>
   )
 }
 
 function Logo () {
   return <img className="logo" src="logo.png" alt="" />
+}
+
+function Nav () {
+  return (
+    <nav>
+      <ul>
+        <li><Link to="/">Home</Link></li>
+        <li><Link to="/lots">Lots</Link></li>
+        <li><Link to="/help">Help</Link></li>
+      </ul>
+    </nav>
+  )
+}
+
+function Content () {
+  return (
+    <>
+      <Route path="/">
+        <HomePage />
+      </Route>
+      <Route path="/lots">
+        <LotsPage />
+      </Route>
+      <Route path="/help">
+        <HelpPage />
+      </Route>
+    </>
+  )
+}
+
+function Page ({ children }) {
+  return (
+    <section className="page">
+      {children}
+    </section>
+  )
+}
+
+function HomePage () {
+  return (
+    <Page>
+      <h1>Welcome</h1>
+      <p>Welcome to auction!</p>
+      <p>View <Link to="/lots">lots</Link> or read our <Link to="/help">help</Link></p>
+    </Page>
+  )
+}
+
+function HelpPage () {
+  return (
+    <Page>
+      <h1>Help</h1>
+      <p>Go to <Link to="/lots">lots</Link> and:</p>
+      <ol>
+        <li>Choose an interesting lot</li>
+        <li>Add the lot to favorite list</li>
+      </ol>
+      <p>Back to <Link to="/">home</Link></p>
+    </Page>
+  )
+}
+
+function LotsPage () {
+  return (
+    <>
+      <ClockContainer />
+      <LotsContainerConnected />
+    </>
+  )
 }
 
 function ClockContainer () {
