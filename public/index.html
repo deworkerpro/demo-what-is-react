@@ -14,7 +14,7 @@
 
 // ##########################
 
-const state = {
+let state = {
   time: new Date(),
   lots: [
     {
@@ -124,14 +124,16 @@ render(
 // ##########################
 
 setInterval(() => {
-  const time = new Date()
+  state = {
+    ...state,
+    time: new Date()
+  }
 
-  const app = document.getElementById('root').querySelector('.app')
+  const newApp = App({ state })
 
-  const clock = app.querySelector('.clock')
-  const newClock = Clock({ time })
-
-  app.replaceChild(newClock, clock)
+  const root = document.getElementById('root')
+  root.innerHTML = ''
+  root.append(newApp)
 }, 1000)
 
 // ##########################
