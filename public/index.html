@@ -287,16 +287,17 @@ function Favorite ({ active, favorite, unfavorite }) {
 
 function renderView (store) {
   const state = store.getState()
+  const dispatch = store.dispatch
 
   const favorite = (id) => {
     api.post(`/lots/${id}/favorite`).then(() => {
-      store.dispatch(favoriteLot(id))
+      dispatch(favoriteLot(id))
     })
   }
 
   const unfavorite = (id) => {
     api.post(`/lots/${id}/unfavorite`).then(() => {
-      store.dispatch(unfavoriteLot(id))
+      dispatch(unfavoriteLot(id))
     })
   }
 
