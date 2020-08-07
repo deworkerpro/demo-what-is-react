@@ -479,8 +479,15 @@ function Loading () {
   return <div className="loading">Loading...</div>
 }
 
-function AlertError ({ message }) {
-  return <div className="error">{message}</div>
+function AlertError ({ message, retry }) {
+  return (
+    <div className="error">
+      <span>{message}</span>
+      {retry ? (
+        <ion-icon name="reload-circle" onClick={retry} />
+      ) : null}
+    </div>
+  )
 }
 
 function LotsContainer ({ lots, loading, loaded, error, load }) {
@@ -491,7 +498,7 @@ function LotsContainer ({ lots, loading, loaded, error, load }) {
   }, [loaded, loading, error])
 
   if (error !== null) {
-    return <AlertError message={error} />
+    return <AlertError message={error} retry={load} />
   }
 
   if (loading) {
