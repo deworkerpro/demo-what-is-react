@@ -285,19 +285,21 @@ function Favorite ({ active, favorite, unfavorite }) {
 
 // ##########################
 
-const favorite = (id) => {
-  api.post(`/lots/${id}/favorite`).then(() => {
-    store.dispatch(favoriteLot(id))
-  })
-}
+function renderView (store) {
+  const state = store.getState()
 
-const unfavorite = (id) => {
-  api.post(`/lots/${id}/unfavorite`).then(() => {
-    store.dispatch(unfavoriteLot(id))
-  })
-}
+  const favorite = (id) => {
+    api.post(`/lots/${id}/favorite`).then(() => {
+      store.dispatch(favoriteLot(id))
+    })
+  }
 
-function renderView (state) {
+  const unfavorite = (id) => {
+    api.post(`/lots/${id}/unfavorite`).then(() => {
+      store.dispatch(unfavoriteLot(id))
+    })
+  }
+
   ReactDOM.render(
     <App state={state} favorite={favorite} unfavorite={unfavorite} />,
     document.getElementById('root')
@@ -305,10 +307,10 @@ function renderView (state) {
 }
 
 store.subscribe(() => {
-  renderView(store.getState())
+  renderView(store)
 })
 
-renderView(store.getState())
+renderView(store)
 
 // ##########################
 
