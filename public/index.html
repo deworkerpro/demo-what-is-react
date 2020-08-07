@@ -66,95 +66,148 @@ let state = {
 // ##########################
 
 function App ({ state }) {
-  const node = document.createElement('div')
-  node.className = 'app'
-
-  node.append(Header())
-  node.append(Clock({ time: state.time }))
-  node.append(Lots({ lots: state.lots }))
-
-  return node
+  return {
+    type: 'div',
+    props: {
+      className: 'app',
+      children: [
+        {
+          type: Header,
+          props: {}
+        },
+        {
+          type: Clock,
+          props: { time: state.time }
+        },
+        {
+          type: Lots,
+          props: { lots: state.lots }
+        }
+      ]
+    }
+  }
 }
 
 function Header () {
-  const node = document.createElement('header')
-  node.className = 'header'
-
-  node.append(Logo())
-  return node
+  return {
+    type: 'header',
+    props: {
+      className: 'header',
+      children: [
+        {
+          type: Logo,
+          props: {}
+        }
+      ]
+    }
+  }
 }
 
 function Logo () {
-  const node = document.createElement('img')
-  node.className = 'logo'
-  node.src = 'logo.png'
-  return node
+  return {
+    type: 'img',
+    props: {
+      className: 'logo',
+      src: 'logo.png',
+    }
+  }
 }
 
 function Clock ({ time }) {
-  const node = document.createElement('div')
-  node.className = 'clock'
+  const isDay = time.getHours() >= 7 && time.getHours() <= 21
 
-  const value = document.createElement('span')
-  value.className = 'value'
-  value.innerText = time.toLocaleTimeString()
-
-  node.append(value)
-
-  const icon = document.createElement('span')
-
-  if (time.getHours() >= 7 && time.getHours() <= 21) {
-    icon.className = 'icon day'
-  } else {
-    icon.className = 'icon night'
+  return {
+    type: 'div',
+    props: {
+      className: 'clock',
+      children: [
+        {
+          type: 'span',
+          props: {
+            className: 'value',
+            children: [
+              time.toLocaleTimeString()
+            ]
+          }
+        },
+        {
+          type: 'span',
+          props: {
+            className: isDay ? 'icon day' : 'icon night',
+          }
+        }
+      ]
+    }
   }
-
-  node.append(icon)
-
-  return node
 }
 
 function Loading () {
-  const node = document.createElement('div')
-  node.className = 'loading'
-  node.innerText = 'Loading...'
-  return node
+  return {
+    type: 'div',
+    props: {
+      className: 'loading',
+      children: [
+        'Loading...'
+      ]
+    }
+  }
 }
 
 function Lots ({ lots }) {
   if (lots === null) {
-    return Loading()
+    return {
+      type: Loading,
+      props: {}
+    }
   }
 
-  const node = document.createElement('div')
-  node.className = 'lots'
-
-  lots.forEach((lot) => {
-    node.append(Lot({ lot }))
-  })
-
-  return node
+  return {
+    type: 'div',
+    props: {
+      className: 'lots',
+      children: lots.map((lot) => ({
+        type: Lot,
+        props: { lot }
+      }))
+    }
+  }
 }
 
 function Lot ({ lot }) {
-  const node = document.createElement('article')
-  node.className = 'lot'
-  node.dataset.key = lot.id
-
-  const price = document.createElement('div')
-  price.className = 'price'
-  price.innerText = lot.price
-  node.append(price)
-
-  const name = document.createElement('h1')
-  name.innerText = lot.name
-  node.append(name)
-
-  const description = document.createElement('p')
-  description.innerText = lot.description
-  node.append(description)
-
-  return node
+  return {
+    type: 'article',
+    key: lot.id,
+    props: {
+      className: 'lot',
+      children: [
+        {
+          type: 'div',
+          props: {
+            className: 'price',
+            children: [
+              lot.price
+            ]
+          },
+        },
+        {
+          type: 'h1',
+          props: {
+            children: [
+              lot.name
+            ],
+          },
+        },
+        {
+          type: 'p',
+          props: {
+            children: [
+              lot.description
+            ],
+          },
+        }
+      ],
+    }
+  }
 }
 
 // ##########################
@@ -210,38 +263,62 @@ api.get('/lots').then((lots) => {
 // ##########################
 
 function render (virtualDom, realDomRoot) {
-  const virtualDomRoot = document.createElement(realDomRoot.tagName)
+  const evaluatedVirtualDom = evaluate(virtualDom)
 
-  virtualDomRoot.id = realDomRoot.id
-  virtualDomRoot.appendChild(virtualDom)
+  const virtualDomRoot = {
+    type: realDomRoot.tagName.toLowerCase(),
+    props: {
+      id: realDomRoot.id,
+      children: [
+        evaluatedVirtualDom
+      ]
+    },
+  }
 
   sync(virtualDomRoot, realDomRoot)
 }
 
+function evaluate (virtualNode) {
+  if (typeof virtualNode !== 'object') {
+    return virtualNode
+  }
+
+  if (typeof virtualNode.type === 'function') {
+    return evaluate((virtualNode.type)(virtualNode.props))
+  }
+
+  const props = virtualNode.props || {}
+
+  return {
+    ...virtualNode,
+    props: {
+      ...props,
+      children: Array.isArray(props.children) ? props.children.map(evaluate) : [evaluate(props.children)]
+    }
+  }
+}
+
 function sync (virtualNode, realNode) {
   // Sync element
-  if (virtualNode.id !== realNode.id) {
-    realNode.id = virtualNode.id
-  }
-  if (virtualNode.className !== realNode.className) {
-    realNode.className = virtualNode.className
-  }
-  if (virtualNode.attributes) {
-    Array.from(virtualNode.attributes).forEach((attr) => {
-      realNode[attr.name] = attr.value
+  if (virtualNode.props) {
+    Object.entries(virtualNode.props).forEach(([name, value]) => {
+      if (name === 'key' || name === 'children') {
+        return
+      }
+      if (realNode[name] !== value) {
+        realNode[name] = value
+      }
     })
   }
-  if (virtualNode.dataset) {
-    Object.keys(virtualNode.dataset).forEach((name) => {
-      realNode.dataset[name] = virtualNode.dataset[name]
-    })
+  if (virtualNode.key) {
+    realNode.dataset.key = virtualNode.key
   }
-  if (virtualNode.nodeValue !== realNode.nodeValue) {
-    realNode.nodeValue = virtualNode.nodeValue
+  if (typeof virtualNode !== 'object' && virtualNode !== realNode.nodeValue) {
+    realNode.nodeValue = virtualNode
   }
 
   // Sync child nodes
-  const virtualChildren = virtualNode.childNodes
+  const virtualChildren = virtualNode.props ? virtualNode.props.children || [] : []
   const realChildren = realNode.childNodes
 
   for (let i = 0; i < virtualChildren.length || i < realChildren.length; i++) {
@@ -254,12 +331,12 @@ function sync (virtualNode, realNode) {
     }
 
     // Update
-    if (virtual !== undefined && real !== undefined && virtual.tagName === real.tagName) {
+    if (virtual !== undefined && real !== undefined && (virtual.type || '') === (real.tagName || '').toLowerCase()) {
       sync(virtual, real)
     }
 
     // Replace
-    if (virtual !== undefined && real !== undefined && virtual.tagName !== real.tagName) {
+    if (virtual !== undefined && real !== undefined && (virtual.type || '') !== (real.tagName || '').toLowerCase()) {
       const newReal = createRealNodeByVirtual(virtual)
       sync(virtual, newReal)
       realNode.replaceChild(newReal, real)
@@ -274,11 +351,11 @@ function sync (virtualNode, realNode) {
   }
 }
 
-function createRealNodeByVirtual(virtual) {
-  if (virtual.nodeType === Node.TEXT_NODE) {
+function createRealNodeByVirtual (virtual) {
+  if (typeof virtual !== 'object') {
     return document.createTextNode('')
   }
-  return document.createElement(virtual.tagName)
+  return document.createElement(virtual.type)
 }
 
 // ##########################
