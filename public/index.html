@@ -309,6 +309,11 @@ function Route ({ path, children }) {
   </RouterContext.Consumer>
 }
 
+function useParams () {
+  const router = React.useContext(RouterContext)
+  return router.match.groups
+}
+
 // ##########################
 
 function App () {
@@ -408,10 +413,10 @@ function LotsPage () {
 }
 
 function LotPage () {
-  const router = React.useContext(RouterContext)
+  const params = useParams()
   return (
     <Page>
-      <h1>Lot #{router.match.groups.id}</h1>
+      <h1>Lot #{params.id}</h1>
       <p>Lot description</p>
     </Page>
   )
