@@ -100,21 +100,21 @@ function appReducer (state = initialState, action) {
   }
 }
 
-function createSetTimeAction (time) {
+function setTime (time) {
   return {
     type: SET_TIME,
     time
   }
 }
 
-function createSetLotsAction (lots) {
+function setLots (lots) {
   return {
     type: SET_LOTS,
     lots
   }
 }
 
-function createChangeLotPriceAction (id, price) {
+function changeLotPrice (id, price) {
   return {
     type: CHANGE_LOT_PRICE,
     id,
@@ -232,15 +232,15 @@ renderView(store.getState())
 // ##########################
 
 setInterval(() => {
-  store.dispatch(createSetTimeAction(new Date()))
+  store.dispatch(setTime(new Date()))
 }, 1000)
 
 api.get('/lots').then((lots) => {
-  store.dispatch(createSetLotsAction(lots))
+  store.dispatch(setLots(lots))
 
   lots.forEach((lot) => {
     stream.subscribe(`price-${lot.id}`, (data) => {
-      store.dispatch(createChangeLotPriceAction(data.id, data.price))
+      store.dispatch(changeLotPrice(data.id, data.price))
     })
   })
 })
