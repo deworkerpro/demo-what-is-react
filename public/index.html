@@ -86,6 +86,127 @@ const stream = {
 
 // ##########################
 
+const LOTS_LOADING_PENDING = 'LOTS_LOADING_PENDING'
+const LOTS_LOADING_SUCCESS = 'LOTS_LOADING_SUCCESS'
+const LOTS_LOADING_ERROR = 'LOTS_LOADING_ERROR'
+const CHANGE_LOT_PRICE = 'CHANGE_LOT_PRICE'
+const FAVORITE_LOT = 'FAVORITE_LOT'
+const UNFAVORITE_LOT = 'UNFAVORITE_LOT'
+
+function lotsReducer (state, action) {
+  switch (action.type) {
+    case LOTS_LOADING_PENDING:
+      return {
+        ...state,
+        lots: [],
+        loading: true,
+        loaded: false,
+        error: null
+      }
+    case LOTS_LOADING_SUCCESS:
+      return {
+        ...state,
+        lots: action.lots,
+        loading: false,
+        loaded: true,
+        error: null
+      }
+    case LOTS_LOADING_ERROR:
+      return {
+        ...state,
+        lots: [],
+        loading: false,
+        loaded: false,
+        error: action.error
+      }
+    case CHANGE_LOT_PRICE:
+      return {
+        ...state,
+        lots: state.lots.map((lot) => {
+          if (lot.id === action.id) {
+            return {
+              ...lot,
+              price: action.price
+            }
+          }
+          return lot
+        })
+      }
+    case FAVORITE_LOT:
+      return {
+        ...state,
+        lots: state.lots.map((lot) => {
+          if (lot.id === action.id) {
+            return {
+              ...lot,
+              favorite: true
+            }
+          }
+          return lot
+        })
+      }
+    case UNFAVORITE_LOT:
+      return {
+        ...state,
+        lots: state.lots.map((lot) => {
+          if (lot.id === action.id) {
+            return {
+              ...lot,
+              favorite: false
+            }
+          }
+          return lot
+        })
+      }
+    default:
+      return state
+  }
+}
+
+function lotsLoadingPending () {
+  return {
+    type: LOTS_LOADING_PENDING
+  }
+}
+
+function lotsLoadingSuccess (lots) {
+  return {
+    type: LOTS_LOADING_SUCCESS,
+    lots
+  }
+}
+
+function lotsLoadingError (error) {
+  return {
+    type: LOTS_LOADING_ERROR,
+    error
+  }
+}
+
+function changeLotPrice (id, price) {
+  return {
+    type: CHANGE_LOT_PRICE,
+    id,
+    price
+  }
+}
+
+function favoriteLot (id) {
+  return {
+    type: FAVORITE_LOT,
+    id
+  }
+}
+
+function unfavoriteLot (id) {
+  return {
+    type: UNFAVORITE_LOT,
+    id
+  }
+}
+
+// ##########################
+
 function App () {
   return (
     <div className="app">
@@ -141,41 +262,21 @@ function AlertError ({ message }) {
 }
 
 function LotsContainer () {
-  const [items, setItems] = React.useState({
+  const [state, dispatch] = React.useReducer(lotsReducer, {
     lots: [],
     loading: false,
     loaded: false,
     error: null
   })
 
-  const { lots, loading, loaded, error } = items
+  const { lots, loading, loaded, error } = state
 
   React.useEffect(() => {
     if (!loaded && !loading && error === null) {
-      setItems((items) => ({
-        ...items,
-        loading: true,
-        loaded: false,
-        error: null
-      }))
+      dispatch(lotsLoadingPending())
       api.get('/lots')
-        .then((lots) => {
-          setItems((items) => ({
-            ...items,
-            lots,
-            loading: false,
-            loaded: true,
-            error: null
-          }))
-        })
-        .catch((error) => {
-          setItems((items) => ({
-            ...items,
-            loading: false,
-            loaded: false,
-            error: error.message
-          }))
-        })
+        .then((lots) => dispatch(lotsLoadingSuccess(lots)))
+        .catch((error) => dispatch(lotsLoadingError(error.message)))
     }
   }, [loaded, loading, error])
 
@@ -193,53 +294,20 @@ function LotsContainer () {
 
   const subscribe = (id) => {
     return stream.subscribe(`price-${id}`, (data) => {
-      setItems((items) => ({
-        ...items,
-        lots: items.lots.map((lot) => {
-          if (lot.id === data.id) {
-            return {
-              ...lot,
-              price: data.price
-            }
-          }
-          return lot
-        })
-      }))
+      dispatch(changeLotPrice(data.id, data.price))
     })
   }
 
   const favorite = (id) => {
-     api.post(`/lots/${id}/favorite`).then(() => {
-       setItems((items) => ({
-         ...items,
-         lots: items.lots.map((lot) => {
-           if (lot.id === id) {
-             return {
-               ...lot,
-               favorite: true
-             }
-           }
-           return lot
-         })
-       }))
-     })
+    return api.post(`/lots/${id}/favorite`).then(() => {
+      dispatch(favoriteLot(id))
+    })
   }
 
   const unfavorite = (id) => {
-     api.post(`/lots/${id}/unfavorite`).then(() => {
-       setItems((items) => ({
-         ...items,
-         lots: items.lots.map((lot) => {
-           if (lot.id === id) {
-             return {
-               ...lot,
-               favorite: false
-             }
-           }
-           return lot
-         })
-       }))
-     })
+    return api.post(`/lots/${id}/unfavorite`).then(() => {
+      dispatch(unfavoriteLot(id))
+    })
   }
 
   return <Lots lots={lots} subscribe={subscribe} favorite={favorite} unfavorite={unfavorite} />
@@ -248,7 +316,9 @@ function LotsContainer () {
 function Lots ({ lots, subscribe, favorite, unfavorite }) {
   return (
     <div className="lots">
-      {lots.map((lot) => <LotContainer lot={lot} subscribe={subscribe} favorite={favorite} unfavorite={unfavorite} key={lot.id} />)}
+      {lots.map((lot) => (
+        <LotContainer lot={lot} subscribe={subscribe} favorite={favorite} unfavorite={unfavorite} key={lot.id} />
+      ))}
     </div>
   )
 }
