@@ -108,3 +108,10 @@ button.unfavorite {
   background: #eee;
   text-align: center;
 }
+
+.error {
+  padding: 15px;
+  border-radius: 6px;
+  background: #ff5252;
+  color: #fff;
+}

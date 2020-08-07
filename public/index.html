@@ -25,24 +25,28 @@ const api = {
   get (url) {
     switch (url) {
       case '/lots':
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
           setTimeout(() => {
-            resolve([
-              {
-                id: 1,
-                name: 'Apple',
-                description: 'Apple description',
-                price: 16,
-                favorite: true
-              },
-              {
-                id: 2,
-                name: 'Orange',
-                description: 'Orange description',
-                price: 41,
-                favorite: false
-              }
-            ])
+            if (Math.random() > 0.25) {
+              resolve([
+                {
+                  id: 1,
+                  name: 'Apple',
+                  description: 'Apple description',
+                  price: 16,
+                  favorite: true
+                },
+                {
+                  id: 2,
+                  name: 'Orange',
+                  description: 'Orange description',
+                  price: 41,
+                  favorite: false
+                }
+              ])
+            } else {
+              reject(new Error('Connection error'))
+            }
           }, 1000)
         })
       default:
@@ -86,20 +90,44 @@ const stream = {
 // ##########################
 
 const auctionInitialState = {
-  lots: null
+  lots: [],
+  loading: false,
+  loaded: false,
+  error: null
 }
 
-const SET_LOTS = 'SET_LOTS'
+const LOTS_LOADING_PENDING = 'LOTS_LOADING_PENDING'
+const LOTS_LOADING_SUCCESS = 'LOTS_LOADING_SUCCESS'
+const LOTS_LOADING_ERROR = 'LOTS_LOADING_ERROR'
 const CHANGE_LOT_PRICE = 'CHANGE_LOT_PRICE'
 const FAVORITE_LOT = 'FAVORITE_LOT'
 const UNFAVORITE_LOT = 'UNFAVORITE_LOT'
 
 function auctionReducer (state = auctionInitialState, action) {
   switch (action.type) {
-    case SET_LOTS:
+    case LOTS_LOADING_PENDING:
       return {
         ...state,
-        lots: action.lots
+        lots: [],
+        loading: true,
+        loaded: false,
+        error: null
+      }
+    case LOTS_LOADING_SUCCESS:
+      return {
+        ...state,
+        lots: action.lots,
+        loading: false,
+        loaded: true,
+        error: null
+      }
+    case LOTS_LOADING_ERROR:
+      return {
+        ...state,
+        lots: [],
+        loading: false,
+        loaded: false,
+        error: action.error
       }
     case CHANGE_LOT_PRICE:
       return {
@@ -145,18 +173,32 @@ function auctionReducer (state = auctionInitialState, action) {
   }
 }
 
-function setLots (lots) {
+function lotsLoadingPending () {
   return {
-    type: SET_LOTS,
+    type: LOTS_LOADING_PENDING
+  }
+}
+
+function lotsLoadingSuccess (lots) {
+  return {
+    type: LOTS_LOADING_SUCCESS,
     lots
+  }
+}
+
+function lotsLoadingError (error) {
+  return {
+    type: LOTS_LOADING_ERROR,
+    error
   }
 }
 
 function loadLotsAsync () {
   return (dispatch, getState, { api }) => {
-    api.get('/lots').then((lots) => {
-      dispatch(setLots(lots))
-    })
+    dispatch(lotsLoadingPending())
+    api.get('/lots')
+      .then((lots) => dispatch(lotsLoadingSuccess(lots)))
+      .catch((error) => dispatch(lotsLoadingError(error.message)))
   }
 }
 
@@ -267,15 +309,27 @@ function Loading () {
   return <div className="loading">Loading...</div>
 }
 
-function LotsContainer ({ lots, loaded, load }) {
+function AlertError ({ message }) {
+  return <div className="error">{message}</div>
+}
+
+function LotsContainer ({ lots, loading, loaded, error, load }) {
   React.useEffect(() => {
-    if (!loaded) {
+    if (!loaded && !loading && error === null) {
       load()
     }
-  }, [loaded])
+  }, [loaded, loading, error])
+
+  if (error !== null) {
+    return <AlertError message={error} />
+  }
+
+  if (loading) {
+    return <Loading />
+  }
 
   if (!loaded) {
-    return <Loading />
+    return null
   }
 
   return <Lots lots={lots} />
@@ -283,7 +337,9 @@ function LotsContainer ({ lots, loaded, load }) {
 
 const lotsContainerMapStateToProps = (state) => ({
   lots: state.auction.lots,
-  loaded: state.auction.lots !== null
+  loading: state.auction.loading,
+  loaded: state.auction.loaded,
+  error: state.auction.error
 })
 
 const lotsContainerMapDispatchToProps = {
