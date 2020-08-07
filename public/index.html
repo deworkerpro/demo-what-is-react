@@ -222,32 +222,17 @@ function Logo () {
   return <img className="logo" src="logo.png" alt="" />
 }
 
-class ClockContainer extends React.Component {
-  constructor () {
-    super()
-    this.state = {
-      time: new Date()
-    }
-    this.tick = this.tick.bind(this)
-  }
+function ClockContainer () {
+  const [time, setTime] = React.useState(new Date())
 
-  tick () {
-    this.setState({
-      time: new Date()
-    })
-  }
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(new Date())
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [setTime])
 
-  componentDidMount () {
-    this.interval = setInterval(this.tick, 1000)
-  }
-
-  componentWillUnmount () {
-    clearInterval(this.interval)
-  }
-
-  render () {
-    return <Clock time={this.state.time} />
-  }
+  return <Clock time={time} />
 }
 
 function Clock ({ time }) {
