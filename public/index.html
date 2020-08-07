@@ -12,7 +12,7 @@
 
 <div id="root"></div>
 
-<script>
+<script type="text/own">
 
 // ##########################
 
@@ -168,6 +168,21 @@ api.get('/lots').then((lots) => {
 
 // ##########################
 
+</script>
+
+<script>
+function convertToNativeJs (code) {
+  // ...
+  return code
+}
+
+const scripts = document.querySelectorAll('script[type="text/own"]')
+scripts.forEach(el => {
+  const js = convertToNativeJs(el.text)
+  const script = document.createElement('script')
+  script.text = js
+  document.querySelector('body').append(script)
+})
 </script>
 
 </body>
