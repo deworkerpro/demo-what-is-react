@@ -207,7 +207,10 @@ const store = Redux.createStore(Redux.combineReducers({
 
 // ##########################
 
-function App ({ state, dispatch }) {
+function App ({ store }) {
+  const state = store.getState()
+  const dispatch = store.dispatch
+
   const time = state.clock.time
   const lots = state.auction.lots
 
@@ -301,11 +304,8 @@ function Favorite ({ active, favorite, unfavorite }) {
 // ##########################
 
 function renderView (store) {
-  const state = store.getState()
-  const dispatch = store.dispatch
-
   ReactDOM.render(
-    <App state={state} dispatch={dispatch} />,
+    <App store={store} />,
     document.getElementById('root')
   )
 }
