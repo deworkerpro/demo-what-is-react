@@ -98,6 +98,8 @@ const auctionInitialState = {
 
 const SET_LOTS = 'SET_LOTS'
 const CHANGE_LOT_PRICE = 'CHANGE_LOT_PRICE'
+const FAVORITE_LOT = 'FAVORITE_LOT'
+const UNFAVORITE_LOT = 'UNFAVORITE_LOT'
 
 function auctionReducer (state = auctionInitialState, action) {
   switch (action.type) {
@@ -114,6 +116,32 @@ function auctionReducer (state = auctionInitialState, action) {
             return {
               ...lot,
               price: action.price
+            }
+          }
+          return lot
+        })
+      }
+    case FAVORITE_LOT:
+      return {
+        ...state,
+        lots: state.lots.map((lot) => {
+          if (lot.id === action.id) {
+            return {
+              ...lot,
+              favorite: true
+            }
+          }
+          return lot
+        })
+      }
+    case UNFAVORITE_LOT:
+      return {
+        ...state,
+        lots: state.lots.map((lot) => {
+          if (lot.id === action.id) {
+            return {
+              ...lot,
+              favorite: false
             }
           }
           return lot
@@ -136,6 +164,20 @@ function changeLotPrice (id, price) {
     type: CHANGE_LOT_PRICE,
     id,
     price
+  }
+}
+
+function favoriteLot (id) {
+  return {
+    type: FAVORITE_LOT,
+    id
+  }
+}
+
+function unfavoriteLot (id) {
+  return {
+    type: UNFAVORITE_LOT,
+    id
   }
 }
 
