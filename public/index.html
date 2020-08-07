@@ -234,18 +234,37 @@ function sync (virtualNode, realNode) {
     realNode.nodeValue = virtualNode.nodeValue
   }
 
-  realNode.innerHTML = ''
-
   // Sync child nodes
   const virtualChildren = virtualNode.childNodes
+  const realChildren = realNode.childNodes
 
-  for (let i = 0; i < virtualChildren.length; i++) {
+  for (let i = 0; i < virtualChildren.length || i < realChildren.length; i++) {
     const virtual = virtualChildren[i]
+    const real = realChildren[i]
+
+    // Remove
+    if (virtual === undefined && real !== undefined) {
+      realNode.remove(real)
+    }
+
+    // Update
+    if (virtual !== undefined && real !== undefined && virtual.tagName === real.tagName) {
+      sync(virtual, real)
+    }
+
+    // Replace
+    if (virtual !== undefined && real !== undefined && virtual.tagName !== real.tagName) {
+      const newReal = createRealNodeByVirtual(virtual)
+      sync(virtual, newReal)
+      realNode.replaceChild(newReal, real)
+    }
 
     // Add
-    const newReal = createRealNodeByVirtual(virtual)
-    sync(virtual, newReal)
-    realNode.appendChild(newReal)
+    if (virtual !== undefined && real === undefined) {
+      const newReal = createRealNodeByVirtual(virtual)
+      sync(virtual, newReal)
+      realNode.appendChild(newReal)
+    }
   }
 }
 
